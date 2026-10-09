@@ -1,6 +1,6 @@
 {
   "name": "@seekbuddy/dsh-ui",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.0",
   "description": "Unofficial React components in the DeepSeek Harness (DSH) web UI design system: the DSH primitives plus the components DSH does not provide (cards, tabs, pagination, messages, upload, date/time pickers), on the same --dsw-* tokens. Not affiliated with or endorsed by DeepSeek.",
   "keywords": [
     "dsh",

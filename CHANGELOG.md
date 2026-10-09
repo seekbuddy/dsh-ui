@@ -8,9 +8,9 @@ breaking changes; they are listed under **Breaking**.
 Upstream DSH synchronizations are recorded with the DSH tag they move to; the full list of local
 changes to the DSH layer lives in [UPSTREAM.md](UPSTREAM.md).
 
-## [Unreleased]
+## [0.2.0-beta.0] - 2026-10-09
 
-Target version: 0.2.0. First release under the name `@seekbuddy/dsh-ui`. DSH layer synchronized with `dsh-v0.2.0-rc.2`.
+First release under the name `@seekbuddy/dsh-ui`. DSH layer synchronized with `dsh-v0.2.0-rc.2`.
 
 ### Breaking
 
@@ -46,4 +46,4 @@ Target version: 0.2.0. First release under the name `@seekbuddy/dsh-ui`. DSH lay
   server` warning during React 18 server rendering. The markup is correct; the popover position is
   computed on the client.
 
-[Unreleased]: https://github.com/seekbuddy/dsh-ui/commits/main
+[0.2.0-beta.0]: https://github.com/seekbuddy/dsh-ui/releases/tag/v0.2.0-beta.0
