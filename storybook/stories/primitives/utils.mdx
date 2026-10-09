@@ -1,0 +1,441 @@
+import { useState } from 'react'
+import { Meta } from '@storybook/addon-docs/blocks'
+import {
+  Button,
+  Input,
+  fileSizeText,
+  focusWithoutRing,
+  isDarwinDesktop,
+  observeComposition,
+  pointerModality,
+  projectUserText,
+  rankByName,
+  relativeTime,
+  writeClipboard,
+} from '@seekbuddy/dsh-ui'
+
+<Meta title="镜像层（上游同步）/工具函数" />
+
+# 工具函数
+
+根入口 `@seekbuddy/dsh-ui` 导出九个与组件无关的轻量工具：（第九个是 `dsh-v0.2.0-rc.2` 新导出的 `pointerModality`，见页尾）`writeClipboard`、`relativeTime`、`projectUserText`，`dsh-v0.1.5-rc.2` 新增的 `fileSizeText`、`rankByName`，`dsh-v0.1.7-rc.1` 新增的 `isDarwinDesktop`，以及 `dsh-v0.1.7-rc.2` 新增的 `focusWithoutRing`、`observeComposition`。八者都是上游同步件，源码不改；下面的输出都是页面加载时**实际调用**的结果，不是手抄。
+
+export const cardStyle = {
+  display: 'grid',
+  gap: 8,
+  justifyItems: 'start',
+  padding: 12,
+  borderRadius: 8,
+  background: 'var(--dsw-alias-bg-layer-2)',
+  border: '1px solid var(--dsw-alias-border-l2)',
+  color: 'var(--dsw-alias-label-primary)',
+  font: 'var(--dsw-font-s-14)',
+}
+
+export const statusStyle = { font: 'var(--dsw-font-xs-13)', color: 'var(--dsw-alias-label-secondary)' }
+
+## writeClipboard
+
+```ts
+function writeClipboard(text: string): Promise<boolean>
+```
+
+**定位**：统一的宿主剪贴板写入。优先走异步 `navigator.clipboard.writeText`，宿主没有它（jsdom、非安全上下文）时回退到 `document.execCommand('copy')`。只返回宿主**是否接受了写入**——权限被拒、iframe 策略拦截都返回 `false`，不会假装成功。"已复制"之类的反馈留给各个控件自己做。
+
+**什么时候用**：任何复制按钮、复制代码块、复制路径。包内的 CodeBlock / JsonTree / HoverCard 复制都走它。
+
+**什么时候不用**：需要写入富文本或多种 MIME（用 `navigator.clipboard.write` 自己处理）；需要读剪贴板（本函数只写）。
+
+**可访问性**：不适用（无 UI）。调用方要把写入结果播报出去：成功切换按钮文字为"已复制"，失败给出提示，别只改图标。
+
+**相关 token**：无。
+
+现场试一下——在 Storybook 的 iframe 里，浏览器可能拒绝剪贴板写入，那时返回 `false`，这正是它要报告的事：
+
+export const ClipboardDemo = () => {
+  const [result, setResult] = useState('尚未写入')
+  return (
+    <div style={cardStyle}>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={async () => {
+          const ok = await writeClipboard('@seekbuddy/dsh-ui')
+          setResult(ok ? 'true · 宿主已接受，去粘贴看看' : 'false · 宿主拒绝写入')
+        }}
+      >
+        把「@seekbuddy/dsh-ui」写进剪贴板
+      </Button>
+      <output style={statusStyle}>返回值：{result}</output>
+    </div>
+  )
+}
+
+<ClipboardDemo />
+
+## relativeTime
+
+```ts
+type RelativeTimeUnit = 'now' | 'minutes' | 'hours' | 'days' | 'months' | 'years'
+
+interface RelativeTime {
+  unit: RelativeTimeUnit
+  n: number // 'now' 时为 0
+}
+
+function relativeTime(at: number, now: number): RelativeTime
+```
+
+**定位**：紧凑相对时间的**分桶**，不出文字。给会话列表这类"给一行标个时间"的场景用：分桶逻辑集中在这里，保证两个界面给同一个会话标出的时间一致；**文字由调用方按自己的语言表本地化**——返回的是 `{ unit, n }` 结构，不是字符串。`now` 由调用方注入，函数本身纯净、可测。分桶阈值：< 1 分钟 → `now`；< 1 小时 → `minutes`；< 1 天 → `hours`；< 30 天 → `days`；< 365 天 → `months`（按 30 天）；否则 `years`（按 365 天）。`at` 晚于 `now` 时按 0 处理，一律返回 `now`。
+
+**什么时候用**：列表行尾的时间标签、队列预览、任何需要"5 分钟前 / 3 小时前"粒度的地方。
+
+**什么时候不用**：需要精确到秒或需要"未来"方向（"3 分钟后"）；需要完整日期（直接用 `Intl.DateTimeFormat`）。
+
+**可访问性**：不适用（无 UI）。渲染时建议把完整时间放进 `title` 或 `<time dateTime>`，紧凑文字只是可见形态。
+
+**相关 token**：无。
+
+下面用固定的 `now`（2026-09-03 12:00 UTC）调用，右列是调用方**自己**用中文字典把结构本地化的样子：
+
+export const NOW = Date.UTC(2026, 8, 3, 12)
+
+export const SAMPLES = [
+  ['20 秒前', 20_000],
+  ['5 分钟前', 5 * 60_000],
+  ['3 小时前', 3 * 3_600_000],
+  ['2 天前', 2 * 86_400_000],
+  ['45 天前', 45 * 86_400_000],
+  ['400 天前', 400 * 86_400_000],
+  ['10 分钟后（未来）', -10 * 60_000],
+]
+
+export const ZH = {
+  now: () => '刚刚',
+  minutes: (n) => `${n} 分钟前`,
+  hours: (n) => `${n} 小时前`,
+  days: (n) => `${n} 天前`,
+  months: (n) => `${n} 个月前`,
+  years: (n) => `${n} 年前`,
+}
+
+export const RelativeTimeTable = () => (
+  <table>
+    <thead>
+      <tr>
+        <th>输入 `at`（相对 now）</th>
+        <th>返回 `unit`</th>
+        <th>返回 `n`</th>
+        <th>调用方本地化（示例字典 ZH）</th>
+      </tr>
+    </thead>
+    <tbody>
+      {SAMPLES.map(([label, offset]) => {
+        const result = relativeTime(NOW - offset, NOW)
+        return (
+          <tr key={label}>
+            <td>{label}</td>
+            <td>
+              <code>{result.unit}</code>
+            </td>
+            <td>
+              <code>{result.n}</code>
+            </td>
+            <td>{ZH[result.unit](result.n)}</td>
+          </tr>
+        )
+      })}
+    </tbody>
+  </table>
+)
+
+<RelativeTimeTable />
+
+## projectUserText
+
+```ts
+function projectUserText(text: string, sessionLabels: readonly string[]): ReactNode
+```
+
+**定位**：把**已发送的用户文本**里的引用形式投影成行内芯片，只做展示——记录下来的模型文本仍是唯一真相，投影不改它。所有片段都是行内元素，单行消息不会被拆行。三种装饰来源，按优先级：① 会话的线上形式 `@[label](dsh-session:…)` 折叠成 label；② `sessionLabels` 给出的精确会话标签装饰对应的裸 `@label`；③ 词边界上的 `/name`、`@path`、`@"带空格的路径"` 按形状装饰（`/` 是命令，`@…/` 是文件夹，其余 `@…` 是文件，显示时只留最后一段路径）。
+
+**什么时候用**：消息气泡、发送队列预览等展示用户已发送文本的地方。`sessionLabels` 传相邻 recall 关联的会话标签，没有就传 `[]`。
+
+**什么时候不用**：渲染助手输出（那是 Markdown，用 `MarkdownText`）；编辑态的输入框（引用在编辑器里是真正的 chip，不是投影）；需要解释 Markdown 的用户文本（它按字面投影，不解释 Markdown 标记）。
+
+**可访问性**：芯片是 `<span>`，`title` 是匹配到的原始文本，图标是装饰性 `ReferenceIcon`；整段仍是可选中、可读屏的普通文本，没有引入交互元素。
+
+**相关 token**：`--dsw-alias-state-business-primary`（芯片文字色，来自 `user-text.module.css`）。
+
+输入 / 输出对照（右侧为实际渲染结果）：
+
+export const USER_TEXT_CASES = [
+  {
+    label: '三种来源都有',
+    text: '请使用 /review 检查 @src/components/ 并参考 @[支付重构](dsh-session:session-42)',
+    sessionLabels: ['支付重构'],
+  },
+  {
+    label: '裸 @label 由 sessionLabels 装饰为会话',
+    text: '接着 @支付重构 里的结论继续',
+    sessionLabels: ['支付重构'],
+  },
+  {
+    label: '同一句、不传 sessionLabels → 按形状当成文件',
+    text: '接着 @支付重构 里的结论继续',
+    sessionLabels: [],
+  },
+  {
+    label: '带空格的路径要用引号',
+    text: '看看 @"docs/design notes.md" 第 3 节，末尾标点不算：@README.md。',
+    sessionLabels: [],
+  },
+  {
+    label: '没有引用：原样一个 span',
+    text: '今天下午同步一下进度',
+    sessionLabels: [],
+  },
+]
+
+export const UserTextTable = () => (
+  <table>
+    <thead>
+      <tr>
+        <th>场景</th>
+        <th>输入 `text` / `sessionLabels`</th>
+        <th>渲染结果</th>
+      </tr>
+    </thead>
+    <tbody>
+      {USER_TEXT_CASES.map(({ label, text, sessionLabels }) => (
+        <tr key={label}>
+          <td>{label}</td>
+          <td>
+            <code>{JSON.stringify(text)}</code>
+            <br />
+            <code>{JSON.stringify(sessionLabels)}</code>
+          </td>
+          <td style={{ whiteSpace: 'pre-wrap' }}>{projectUserText(text, sessionLabels)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)
+
+<UserTextTable />
+
+## fileSizeText
+
+```ts
+function fileSizeText(bytes: number): string
+```
+
+**定位**：字节数 → 紧凑的用户可读大小（`312B`、`4.2KB`、`1.5MB`、`2.4GB`），附件、上传、交付文件卡片共用同一套写法。按 1024 进位；某一单位下小于 10 时保留一位小数，否则取整。`dsh-v0.1.5-rc.2` 新增。
+
+**什么时候用**：文件大小、上传进度里的"已传 / 总量"。
+
+**什么时候不用**：需要精确字节数（直接显示数字）；需要千位分隔或本地化单位名（用 `Intl.NumberFormat` 自己拼）——本函数单位固定为 B / KB / MB / GB，不做本地化。
+
+**可访问性**：不适用（无 UI）。
+
+**相关 token**：无。
+
+下面是页面加载时**实际调用**的结果（样例取自上游单测）：
+
+export const SIZE_SAMPLES = [312, 4.25 * 1024, 12.5 * 1024, 1.5 * 1024 * 1024, 12.5 * 1024 * 1024, 2447 * 1024 * 1024]
+
+export const FileSizeTable = () => (
+  <table>
+    <thead>
+      <tr>
+        <th>输入 `bytes`</th>
+        <th>返回值</th>
+      </tr>
+    </thead>
+    <tbody>
+      {SIZE_SAMPLES.map((bytes) => (
+        <tr key={bytes}>
+          <td>
+            <code>{bytes.toLocaleString('en-US')}</code>
+          </td>
+          <td>
+            <code>{fileSizeText(bytes)}</code>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)
+
+<FileSizeTable />
+
+## rankByName
+
+```ts
+function rankByName<T extends { readonly name: string }>(items: readonly T[], rawQuery: string): readonly T[]
+```
+
+**定位**：`/` 菜单候选的统一排序。查询（不区分大小写）必须是候选名的**有序子序列**才算命中；命中后先按"是否前缀"排，再按对齐得分排（名字开头与 `-` / `_` 分隔后的字符、连续命中加分，跳过的字符扣分），得分相同保持输入顺序。空查询原样返回输入列表。`dsh-v0.1.5-rc.2` 新增。
+
+**什么时候用**：slash 命令、技能、提示词这类"输几个字母挑一个"的候选列表。
+
+**什么时候不用**：全文搜索或按描述搜索（它只看 `name`）；需要高亮命中字符（它只排序，不返回命中位置）。
+
+**可访问性**：不适用（无 UI）。
+
+**相关 token**：无。
+
+输入查询试试（排序结果是页面上现算的）：
+
+export const COMMANDS = [
+  'review',
+  'review-pr',
+  'refactor',
+  'release-notes',
+  'run-tests',
+  'fix-bug',
+  'foo-bar',
+  'fabulous',
+  'format',
+].map((name) => ({ name }))
+
+export const RankDemo = () => {
+  const [query, setQuery] = useState('rv')
+  const ranked = rankByName(COMMANDS, query)
+  return (
+    <div style={cardStyle}>
+      <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="输入查询，例如 rv、fb、re" />
+      <output style={statusStyle}>
+        {ranked.length === 0 ? '无命中' : ranked.map((item) => item.name).join(' → ')}
+      </output>
+    </div>
+  )
+}
+
+<RankDemo />
+
+## `isDarwinDesktop()`
+
+是否运行在 **macOS 桌面壳**里：Electron preload 会给 `<html>` 打 `data-platform="darwin"`，纯 Web 永远不设。上游用它给 hiddenInset 标题栏让出红绿灯的位置。**渲染时读**，别在模块顶层缓存——这个标记可能晚到 DOMContentLoaded 才出现。`dsh-v0.1.7-rc.1` 新增。
+
+**什么时候用**：只有在 macOS 桌面壳里才需要的布局偏移（标题栏留白、拖拽区）。
+
+**什么时候不用**：判断浏览器 / 操作系统（它只认桌面壳的标记，macOS 上的浏览器也是 `false`）；Server Component 里（读的是 `document`）。
+
+**可访问性**：不适用（无 UI）。
+
+**相关 token**：无。
+
+export const DarwinDemo = () => (
+  <div style={cardStyle}>
+    <output style={statusStyle}>
+      isDarwinDesktop() = {String(isDarwinDesktop())}（Storybook 跑在浏览器里，没有桌面壳标记，应为 false）
+    </output>
+  </div>
+)
+
+<DarwinDemo />
+
+## `focusWithoutRing(element, options?)`
+
+程序把焦点送到某个元素上，但**不画焦点环**：给元素打 `data-dsh-automatic-focus` 属性（主题的 `base.css` 对它 `outline: none`），用户一按 Tab / 方向键 / Home / End，或元素失焦，属性即撤、环恢复。`useModalLayer` 打开与关闭时的进焦、回焦都走它。`dsh-v0.1.7-rc.2` 新增。
+
+**什么时候用**：非用户主动的焦点移动——打开面板送进去、关闭面板送回来、列表删掉一项后落到邻项。
+
+**什么时候不用**：用户点击 / 键盘导航产生的焦点（浏览器自己会按 `:focus-visible` 判断）；想永久去掉焦点环（这是可访问性问题，不是它的用途）。
+
+**可访问性**：只压掉环的绘制，元素仍然是 `document.activeElement`，读屏与键盘行为不变。
+
+**相关 token**：`--dsw-focus-ring-width`、`--dsw-focus-ring-color`（环本身，见 `focus.css`）。
+
+export const FocusWithoutRingDemo = () => {
+  const [state, setState] = useState('未操作')
+  return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            const target = document.getElementById('focus-without-ring-target')
+            if (target) {
+              focusWithoutRing(target)
+              setState(
+                `目标 hasAttribute('data-dsh-automatic-focus') = ${String(target.hasAttribute('data-dsh-automatic-focus'))}`,
+              )
+            }
+          }}
+        >
+          送焦点到右边（无环）
+        </Button>
+        <Button id="focus-without-ring-target" size="sm" variant="ghost" onKeyDown={() => setState('按了键，环恢复')}>
+          目标
+        </Button>
+      </div>
+      <output style={statusStyle}>{state}</output>
+    </div>
+  )
+}
+
+<FocusWithoutRingDemo />
+
+## `observeComposition(document)`
+
+给局部键盘处理器用的**输入法组字守卫**：返回 `{ guards(event), dispose() }`。`guards` 在 `compositionstart` 到 `compositionend` 之间、以及组字刚结束后那一次 `keydown`（有些引擎 `isComposing` 已经是 false，keyCode 还是 229）都返回 `true`，让 Escape / Enter 处理器跳过这次按键，不把用户正在选的候选词当成命令。`useModalLayer` 用它守 Escape。`dsh-v0.1.7-rc.2` 新增。
+
+**什么时候用**：自己写 `keydown` 监听并响应 Escape / Enter / 方向键的地方（命令面板、自建列表导航）。
+
+**什么时候不用**：React 受控输入的 `onChange`（它天然等组字结束）；不响应命令键的纯文本框。
+
+**可访问性**：不适用（无 UI）；它保护的是中日韩输入法用户。
+
+**相关 token**：无。
+
+export const ObserveCompositionDemo = () => {
+  const [state, setState] = useState('点击探测')
+  return (
+    <div style={cardStyle}>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => {
+          const observer = observeComposition(document)
+          const guarded = observer.guards(new KeyboardEvent('keydown', { key: 'Escape' }))
+          observer.dispose()
+          setState(`guards(Escape) = ${String(guarded)}（当前没有组字，应为 false）`)
+        }}
+      >
+        observeComposition(document).guards(Escape)
+      </Button>
+      <output style={statusStyle}>{state}</output>
+    </div>
+  )
+}
+
+<ObserveCompositionDemo />
+
+## `pointerModality()`
+
+最近一次输入是不是**指针**：按过任意键后为 `false`，点过鼠标 / 触摸后为 `true`。`Tooltip` 用它决定"程序聚焦要不要弹提示"（鼠标点击带来的聚焦不弹）。同一模块还在 `<html>` 上发布 `data-input-modality`，主题的 `focus.css` 据此在鼠标模式下隐藏焦点环——那是更窄的"焦点归谁"信号，和这里的"上一次输入"不是一回事。`dsh-v0.2.0-rc.2` 起从根入口导出。
+
+**什么时候用**：自建的悬停 / 聚焦浮层需要和上游 `Tooltip` 一样区分键盘与鼠标触发。
+
+**什么时候不用**：判断要不要画焦点环（用 CSS `:focus-visible`，主题已处理）；Server Component 里（模块在无 `window` 时是惰性的，恒为 `false`）。
+
+**可访问性**：不适用（无 UI）。
+
+**相关 token**：无。
+
+export const PointerModalityDemo = () => {
+  const [state, setState] = useState('点按钮，或 Tab 到按钮上按回车')
+  return (
+    <div style={cardStyle}>
+      <Button size="sm" variant="outline" onClick={() => setState(`pointerModality() = ${String(pointerModality())}`)}>
+        读取 pointerModality()
+      </Button>
+      <output style={statusStyle}>{state}</output>
+    </div>
+  )
+}
+
+<PointerModalityDemo />

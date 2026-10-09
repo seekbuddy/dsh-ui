@@ -1,0 +1,73 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import {
+  DEFAULT_DIFF_MAX_LINES,
+  DEFAULT_READ_MAX_LINES,
+  DEFAULT_SEARCH_MAX_LINES,
+  DEFAULT_TERMINAL_MAX_LINES,
+  diffTotals,
+} from '@seekbuddy/dsh-ui/blocks'
+import { diffAddOnly, diffDeleteOnly, diffMixed, diffMultiFile } from './fixtures.ts'
+
+<Meta title="镜像层（上游同步）/Blocks/常量与函数" />
+
+# Blocks 入口的常量与函数
+
+`@seekbuddy/dsh-ui/blocks` 除六个展示组件外，还导出四个默认最大行数常量和一个统计函数。以下数值直接从入口 import 后渲染，不是手抄。
+
+## `DEFAULT_*_MAX_LINES`
+
+四个块共用同一套"头尾折叠"算法（`headTailCap`，包内部实现）：行数超过 `maxLines` 时显示头 `ceil(maxLines / 2)` 行 + 尾 `maxLines - head` 行，中间用一个带 `aria-expanded` 的按钮折起。四个默认值相同，保证同一条对话流里终端输出、文件读取、diff 和搜索结果在同一位置切开。
+
+| 常量                         | 值                           | 所属组件        | 说明                                            |
+| :--------------------------- | :--------------------------- | :-------------- | :---------------------------------------------- |
+| `DEFAULT_TERMINAL_MAX_LINES` | {DEFAULT_TERMINAL_MAX_LINES} | `TerminalBlock` | 输出行数上限；传 `maxLines={Infinity}` 关闭折叠 |
+| `DEFAULT_READ_MAX_LINES`     | {DEFAULT_READ_MAX_LINES}     | `ReadBlock`     | 内容行数上限                                    |
+| `DEFAULT_DIFF_MAX_LINES`     | {DEFAULT_DIFF_MAX_LINES}     | `DiffBlock`     | 正文行数上限（路径行、`⋯` 分隔行都计入）        |
+| `DEFAULT_SEARCH_MAX_LINES`   | {DEFAULT_SEARCH_MAX_LINES}   | `SearchBlock`   | 结果行数上限（文件头也算一行）                  |
+
+每个组件页都有一个 **MaxLines** 样张，把默认值与 `maxLines={6}` 并排对比。
+
+```tsx
+import { TerminalBlock, DEFAULT_TERMINAL_MAX_LINES } from '@seekbuddy/dsh-ui/blocks'
+
+// 与默认等价；想让长输出完整展开就传 Infinity
+;<TerminalBlock command="bun test" output={output} labels={labels} maxLines={DEFAULT_TERMINAL_MAX_LINES} />
+```
+
+## `diffTotals(diffs)`
+
+```ts
+function diffTotals(diffs: DiffHunk[]): { added: number; removed: number }
+```
+
+与 `DiffBlock` 页脚打印的 `+added -removed` 完全相同的数字，导出给"摘要行"用：列表页只想显示 `+12 -3` 而不渲染整个正文时调它，不必自己重新数行。
+
+计数规则（与组件正文一致）：
+
+- `oldText` 的每一行计入 `removed`，`newText` 的每一行计入 `added`；
+- `oldText: null`（新建 / 整文件覆盖）在删除侧是 0 行；
+- 空串是 0 行；文本末尾**单个**换行是行终止符，不算额外的空行；中间真正的空行（`\n\n`）保留。
+
+### 输入 / 输出示例
+
+下表的输出列是现场调用 `diffTotals` 的结果（样例数据来自 `stories/blocks/fixtures.ts`）：
+
+| 样例     | 输入（hunk 数）         | 输出                                                      |
+| :------- | :---------------------- | :-------------------------------------------------------- |
+| 增删混合 | {diffMixed.length}      | <code>{JSON.stringify(diffTotals(diffMixed))}</code>      |
+| 只增     | {diffAddOnly.length}    | <code>{JSON.stringify(diffTotals(diffAddOnly))}</code>    |
+| 只删     | {diffDeleteOnly.length} | <code>{JSON.stringify(diffTotals(diffDeleteOnly))}</code> |
+| 多文件   | {diffMultiFile.length}  | <code>{JSON.stringify(diffTotals(diffMultiFile))}</code>  |
+| 空数组   | 0                       | <code>{JSON.stringify(diffTotals([]))}</code>             |
+
+```ts
+import { diffTotals, type DiffHunk } from '@seekbuddy/dsh-ui/blocks'
+
+const diffs: DiffHunk[] = [
+  { path: 'a.ts', oldText: 'x\ny\n', newText: 'x\nz\nw\n' }, // -2 +3
+  { path: 'b.md', oldText: null, newText: '# 标题\n' }, // -0 +1
+]
+diffTotals(diffs) // → { added: 4, removed: 2 }
+```
+
+注意：`diffTotals` 不做行级对齐，"改一行"在这里是"删一行 + 增一行"——这与 `DiffBlock` 正文的画法一致。

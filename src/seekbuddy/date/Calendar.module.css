@@ -1,0 +1,179 @@
+/* Calendar grid — SeekBuddy extension layer. Cell geometry
+ * is local; every color and type value comes from --dsw-alias-* / --dsw-font-* tokens so the
+ * grid follows the theme wherever it renders. */
+.calendar {
+  --calendar-cell: 32px;
+  --calendar-gap: 2px;
+  display: inline-grid;
+  gap: 24px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.twoMonths {
+  grid-auto-flow: column;
+}
+
+.month {
+  display: grid;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.navGroup {
+  display: inline-flex;
+  gap: 2px;
+}
+
+/* Icon-only ghost button: square instead of the capsule padding. */
+.nav {
+  width: 28px;
+  padding: 0;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.nav:hover:not(:disabled) {
+  color: var(--dsw-alias-label-primary);
+}
+
+.nav:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 1px;
+}
+
+.double {
+  display: inline-flex;
+  align-items: center;
+}
+
+.double > :last-child {
+  margin-left: -8px;
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font: var(--dsw-font-s-strong-14);
+}
+
+.grid {
+  border-collapse: separate;
+  border-spacing: var(--calendar-gap);
+  margin: calc(var(--calendar-gap) * -1);
+}
+
+.weekday {
+  width: var(--calendar-cell);
+  height: 24px;
+  padding: 0;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxs-12);
+  font-weight: 400;
+  text-align: center;
+}
+
+.cell {
+  padding: 0;
+}
+
+.day {
+  display: inline-flex;
+  width: var(--calendar-cell);
+  height: var(--calendar-cell);
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dsw-radius-sm);
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+}
+
+.day:hover:not(.disabled):not(.selected) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.day:active:not(.disabled):not(.selected) {
+  background: var(--dsw-alias-interactive-bg-active);
+}
+
+.day:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 1px;
+}
+
+.outside {
+  color: var(--dsw-alias-label-dimmed);
+}
+
+.today {
+  box-shadow: inset 0 0 0 1px var(--dsw-alias-state-business-primary);
+}
+
+.selected {
+  color: var(--dsw-alias-label-primary-foreground);
+  background: var(--dsw-alias-button-primary-fill);
+}
+
+.selected:hover {
+  background: var(--dsw-alias-button-primary-hover);
+}
+
+.disabled {
+  color: var(--dsw-alias-label-dimmed);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Range mode: no horizontal cell gap so the band runs continuously; ends keep the outer radius. */
+.range .grid {
+  border-spacing: 0 var(--calendar-gap);
+}
+
+.range .day {
+  border-radius: 0;
+}
+
+.range .day:not([data-range]):not([data-range-preview]) {
+  border-radius: var(--dsw-radius-sm);
+}
+
+/* Same tint as the drafting preview, so the band looks identical before and after the second pick. */
+.day[data-range='middle'] {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.day[data-range='start'],
+.day[data-range-preview='start'] {
+  border-radius: var(--dsw-radius-sm) 0 0 var(--dsw-radius-sm);
+}
+
+.day[data-range='end'],
+.day[data-range-preview='end'] {
+  border-radius: 0 var(--dsw-radius-sm) var(--dsw-radius-sm) 0;
+}
+
+.day[data-range='single'],
+.day[data-range-preview='single'] {
+  border-radius: var(--dsw-radius-sm);
+}
+
+/* Preview while the end is still pending: hover tint, the pointer / focused day rounds the far edge. */
+.day[data-range-preview] {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.range .selected:hover {
+  background: var(--dsw-alias-button-primary-hover);
+}

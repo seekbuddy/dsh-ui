@@ -1,0 +1,113 @@
+/* Underline tab list — SeekBuddy extension layer. Colors and type come only from
+ * --dsw-alias-* / --dsw-font-* tokens so the component follows the theme
+ * wherever it renders. */
+.tabs {
+  display: grid;
+  min-width: 0;
+}
+
+.tablist {
+  display: flex;
+  min-height: 41px;
+  align-items: flex-end;
+  gap: 20px;
+  /* 底线画在 padding box 内侧（inset 阴影）而不是 border：`overflow-x: auto` 会让 overflow-y 也算成 auto，
+     下划线若压到 border 区哪怕 1px 也是纵向溢出，会冒出竖滚动条。 */
+  box-shadow: inset 0 -1px 0 var(--dsw-alias-border-l1);
+  overflow-x: auto;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  min-height: 41px;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  padding: 0 1px;
+  border: 0;
+  color: var(--dsw-alias-label-tertiary);
+  background: transparent;
+  cursor: pointer;
+  font: var(--dsw-font-xxs-12);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* size：整组标签的字阶（默认 sm）；行高随 token 走，tablist 高度由内容撑开 */
+.md .tab {
+  font: var(--dsw-font-s-14);
+  font-weight: 500;
+}
+
+.lg .tab {
+  min-height: 44px;
+  font: var(--dsw-font-base-16);
+  font-weight: 500;
+}
+
+/* bold：整组标签换用同字阶的 -strong- token（主题里是 600），不手写 font-weight 数值 */
+.bold .tab {
+  font: var(--dsw-font-xxs-strong-12);
+}
+
+.bold.md .tab {
+  font: var(--dsw-font-s-strong-14);
+}
+
+.bold.lg .tab {
+  font: var(--dsw-font-base-strong-16);
+}
+
+.tab:hover:not(:disabled),
+.active {
+  color: var(--dsw-alias-label-primary);
+}
+
+.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--dsw-alias-state-business-primary);
+}
+
+.tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tab:focus-visible {
+  border-radius: var(--dsw-radius-xs);
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}
+
+/* Count chip: a fill token on a readable label, not caption-on-overlay — that pair was a faint chip
+   with faint digits in light and mid-grey digits on a mid-grey chip in dark. */
+.count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: var(--dsw-radius-sm);
+  color: var(--dsw-alias-label-secondary);
+  background: var(--dsw-alias-interactive-bg-active);
+  font: var(--dsw-font-xxxs-11);
+  font-weight: 500;
+  text-align: center;
+}
+
+.panel {
+  min-width: 0;
+  padding-top: 16px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.panel:focus-visible {
+  border-radius: var(--dsw-radius-xs);
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}

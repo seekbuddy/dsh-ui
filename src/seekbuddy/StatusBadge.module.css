@@ -1,0 +1,35 @@
+/* StatusBadge — read-only status chip: upstream StateDot + label. Only the label colour changes
+ * per tone (the dot carries its own state colour from upstream); the capsule, height and font come
+ * from the upstream Pill this wraps (imported first, so these single-class rules land later in the
+ * cascade and win at equal specificity). No interactive states: the badge is a static span. */
+.badge {
+  white-space: nowrap;
+}
+
+/* The dot sits on the label's optical centre; Pill's own 4px gap handles the spacing. */
+.dot {
+  flex: none;
+}
+
+/* Mounting / connecting: the animated dot carries the state, so the label stays neutral —
+ * two moving signals in one chip read as an error. */
+.progress {
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* Neutral: neither a problem nor an achievement — "delisted but still usable". */
+.neutral {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.success {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.warning {
+  color: var(--dsw-alias-state-warn-primary);
+}
+
+.error {
+  color: var(--dsw-alias-state-error-primary);
+}

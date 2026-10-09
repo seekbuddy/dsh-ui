@@ -1,0 +1,57 @@
+/* Card surface — SeekBuddy extension layer. Only the surface: background, hairline stroke,
+ * radius, elevation, padding. Content is the caller's.
+ *
+ * Elevation instead of border: upstream's `--dsw-elevation-*` tokens draw the 0.5 px hairline
+ * inside box-shadow (components pair them with `border: 0`), so a `border` on top would double the
+ * edge. The stroke colour is rebound to `--dsw-alias-border-l3` — the frame upstream's plugin
+ * manager gives its 48 px plugin icons and its panels (PluginManagerPage.module.css `.cardIcon`) —
+ * because the default l4 hairline is a 4 % wash you can barely see in light.
+ *
+ * Interactive cards fill with `--dsw-alias-interactive-bg-hover` on hover, the same translucent
+ * wash upstream's plugin cards and inventory rows use (`.cardLink:hover`, `.cardContent:hover`);
+ * the stroke and elevation stay put, upstream cards do not lift. */
+.card {
+  --card-pad: 16px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--card-pad);
+  border: 0;
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  --dsw-elevation-stroke-color: var(--dsw-alias-border-l3);
+  box-shadow: var(--dsw-elevation-panel);
+  list-style: none;
+}
+
+.none {
+  --card-pad: 0;
+}
+
+.sm {
+  --card-pad: 14px;
+}
+
+.md {
+  --card-pad: 16px;
+}
+
+.interactive {
+  cursor: pointer;
+}
+
+/* Layer the wash over the card fill instead of replacing it: upstream's plugin cards sit on the bare
+   page, but this card has its own `bg-layer-1`; replacing it would drop the dark card to the page
+   colour plus 8 % white, i.e. darker than at rest. A gradient of the wash is painted above the
+   colour, so hover reads lighter in both themes. */
+.interactive:hover {
+  background-image: linear-gradient(var(--dsw-alias-interactive-bg-hover), var(--dsw-alias-interactive-bg-hover));
+}
+
+/* The caller decides whether a card is focusable (role="button" + tabIndex); when it is, the focus
+   ring is the same business-blue ring every extension-layer control uses. */
+.card:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}

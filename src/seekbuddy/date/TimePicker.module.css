@@ -1,0 +1,82 @@
+/* Two-column time list — SeekBuddy extension layer. Row
+ * geometry is local; colors and type come only from --dsw-alias-* / --dsw-font-* tokens. */
+.picker {
+  --time-row: 32px;
+  --time-rows: 7;
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(64px, auto));
+  color: var(--dsw-alias-label-primary);
+}
+
+.column {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.column + .column {
+  border-left: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.heading {
+  padding: 0 8px;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxs-12);
+  text-align: center;
+}
+
+.list {
+  max-height: calc(var(--time-row) * var(--time-rows));
+  margin: 0;
+  padding: 0 8px;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.list:focus-visible {
+  border-radius: var(--dsw-radius-sm);
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: -2px;
+}
+
+.option {
+  display: flex;
+  height: var(--time-row);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--dsw-radius-sm);
+  cursor: pointer;
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.option:hover:not(.disabled):not(.selected) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.selected {
+  color: var(--dsw-alias-label-primary-foreground);
+  background: var(--dsw-alias-button-primary-fill);
+}
+
+.selected:hover {
+  background: var(--dsw-alias-button-primary-hover);
+}
+
+/* value === null: the 00 position is highlighted but not reported until the user picks. */
+.placeholder {
+  background: var(--dsw-alias-bg-multi-select);
+}
+
+/* Keyboard focus lives on the list; the active option shows the ring so the user sees where they are. */
+.list:focus-visible [data-active] {
+  box-shadow: inset 0 0 0 1px var(--dsw-alias-state-business-primary);
+}
+
+.disabled {
+  color: var(--dsw-alias-label-dimmed);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}

@@ -1,0 +1,14 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="导读/这是什么" />
+
+# @seekbuddy/dsh-ui 组件文档站（spike）
+
+`@seekbuddy/dsh-ui` 分两层：**镜像层**（随上游 `dsh-v0.2.0-rc.2` 同步，如 `Button`）和 **SeekBuddy 扩展层**（`@seekbuddy/dsh-ui/seekbuddy`，如 `Tabs`、`Spinner`）。
+本站直接读仓库 `src/` 的 TypeScript 源码：
+
+- **Docs 页**：组件说明（来自 JSDoc）、每个 story 的样张与源码、**从类型自动生成的 props 表**；
+- **Controls**：在画布里现场拨属性；
+- 右上角 **主题** 切换 `body[data-ds-dark-theme]`，与本包 `theme` 运行时同一开关。
+
+> 公开入口与用法见仓库 README。

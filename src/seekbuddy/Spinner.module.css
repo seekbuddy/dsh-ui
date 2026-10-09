@@ -1,0 +1,58 @@
+/* Shared loading ring.
+ * Colors derive from currentColor only, so a button-embedded ring inherits the
+ * button foreground and `.page` is the single place a token is pinned. */
+.ring {
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  border-radius: 50%;
+  corner-shape: round;
+  border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-top-color: currentColor;
+  animation: dsh-seekbuddy-spinner 850ms linear infinite;
+}
+
+.sm {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.md {
+  width: 2rem;
+  height: 2rem;
+  border-width: 3px;
+}
+
+.page {
+  color: var(--dsw-alias-label-primary);
+}
+
+.status {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Visually hidden live text; the ring itself stays aria-hidden. */
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes dsh-seekbuddy-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    border-top-color: color-mix(in srgb, currentColor 35%, transparent);
+    border-right-color: currentColor;
+    animation: none;
+  }
+}

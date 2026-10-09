@@ -1,0 +1,56 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { pageItems } from '@seekbuddy/dsh-ui/seekbuddy'
+
+<Meta title="SeekBuddy 扩展层/pageItems（分页算法）" />
+
+# `pageItems(current, pages, lessItems?)`
+
+`Pagination` 的页码条算法，纯函数、单独导出，供测试与自定义渲染。返回 `PaginationItem[]`：`{ type: 'page', page }` 或 `{ type: 'jump-previous' | 'jump-next', page }`（`page` 是点击省略号要去的页）。
+
+规则照 antd：总页数 ≤ 7（`lessItems` 时 ≤ 5）全列；否则首页、尾页常驻，中间以 `current` 为中心取 5 格（3 格），靠近两端时窗口从该端数满；窗口与首 / 尾之间有空隙就放省略号，省略号跳 ±5（±3），钳制在 `[1, pages]`。
+
+export const cases = [
+  [1, 1],
+  [3, 5],
+  [4, 7],
+  [1, 8],
+  [4, 8],
+  [5, 8],
+  [8, 8],
+  [2, 50],
+  [25, 50],
+  [49, 50],
+  [1, 8, true],
+  [25, 50, true],
+]
+
+export const render = (items) =>
+  items
+    .map((item) =>
+      item.type === 'page' ? String(item.page) : item.type === 'jump-previous' ? `«${item.page}` : `»${item.page}`,
+    )
+    .join('  ')
+
+下面每行都是页面加载时**实际调用**的结果（`«20` 表示向前省略号，点它去第 20 页）：
+
+<table style={{ font: 'var(--dsw-font-xs-13)', color: 'var(--dsw-alias-label-primary)', borderCollapse: 'collapse' }}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: 'left', padding: '4px 12px' }}>调用</th>
+      <th style={{ textAlign: 'left', padding: '4px 12px' }}>结果</th>
+    </tr>
+  </thead>
+  <tbody>
+    {cases.map(([current, pages, less]) => (
+      <tr key={`${current}-${pages}-${less ? 1 : 0}`}>
+        <td style={{ padding: '4px 12px', fontFamily: 'monospace' }}>
+          pageItems({current}, {pages}
+          {less ? ', true' : ''})
+        </td>
+        <td style={{ padding: '4px 12px', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
+          {render(pageItems(current, pages, less))}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>

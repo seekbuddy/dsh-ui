@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": {
+      "@seekbuddy/dsh-ui": ["../src/index.ts"],
+      "@seekbuddy/dsh-ui/icons": ["../src/icons.ts"],
+      "@seekbuddy/dsh-ui/blocks": ["../src/blocks.ts"],
+      "@seekbuddy/dsh-ui/markdown": ["../src/markdown.ts"],
+      "@seekbuddy/dsh-ui/theme": ["../src/theme.ts"],
+      "@seekbuddy/dsh-ui/theme/bootstrap": ["../src/theme-bootstrap.ts"],
+      "@seekbuddy/dsh-ui/seekbuddy": ["../src/seekbuddy/index.ts"],
+      "@seekbuddy/dsh-ui/seekbuddy/spinner": ["../src/seekbuddy/Spinner.tsx"],
+      "@seekbuddy/dsh-ui/seekbuddy/tabs": ["../src/seekbuddy/Tabs.tsx"],
+      "@seekbuddy/dsh-ui/seekbuddy/timeline": ["../src/seekbuddy/Timeline.tsx"]
+    }
+  },
+  "include": ["stories", ".storybook", "../src"]
+}

@@ -1,0 +1,8 @@
+/* 只做布局：演示 Input 的 className 落在外层 wrapper（而不是 input）上。 */
+.wide {
+  width: 100%;
+}
+
+.narrow {
+  width: 160px;
+}

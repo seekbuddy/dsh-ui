@@ -1,0 +1,63 @@
+/* Pagination — antd-shaped page strip on upstream ghost Buttons. The buttons bring their
+ * own hover / focus styling; this file only sizes the slots, marks the current page and swaps the
+ * ellipsis for jump arrows on hover, as antd does. */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.total {
+  margin-right: 8px;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xs-13);
+}
+
+.step {
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+}
+
+.page {
+  min-width: 28px;
+  padding: 0 6px;
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+}
+
+.current {
+  background: var(--dsw-alias-interactive-bg-active);
+  color: var(--dsw-alias-label-primary);
+  font-weight: 600;
+}
+
+/* Ellipsis at rest, «/» while hovered or focused (antd behaviour); both stay decorative. */
+.jump {
+  color: var(--dsw-alias-label-tertiary);
+  letter-spacing: 1px;
+}
+
+.arrows {
+  display: none;
+}
+
+.jump:hover:not(:disabled) .dots,
+.jump:focus-visible .dots {
+  display: none;
+}
+
+.jump:hover:not(:disabled) .arrows,
+.jump:focus-visible .arrows {
+  display: inline;
+}
+
+.simple {
+  min-width: 48px;
+  color: var(--dsw-alias-label-secondary);
+  text-align: center;
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+}

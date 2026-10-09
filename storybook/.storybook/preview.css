@@ -1,0 +1,16 @@
+/* 画布与 docs 页跟随 --dsw-* 主题；docs 容器是 Storybook 自己的壳，这里只把底色和文字色接上 */
+body,
+.sb-show-main,
+.sbdocs.sbdocs-wrapper {
+  background: var(--dsw-alias-bg-base) !important;
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsw-font-family);
+}
+/* 只染 docs 正文，避开内嵌的 story（.docs-story）与 Storybook 的免样式区（.sb-unstyled）：
+ * 这条特异性高于组件自己的类，裸 `li` 会把 TimePicker 选中项的字色压成正文色（2026-09-03 踩过）。 */
+.sbdocs.sbdocs-content :is(h1, h2, h3, h4, p, li):not(.docs-story *, .sb-unstyled *) {
+  color: var(--dsw-alias-label-primary);
+}
+.docs-story {
+  background: var(--dsw-alias-bg-layer-1);
+}

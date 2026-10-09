@@ -1,0 +1,86 @@
+/* Field triggers + popover — SeekBuddy extension layer.
+ * Trigger geometry mirrors the upstream Input atom (32px, r8, l4 hairline); the popover card
+ * takes the Menu card's surface / elevation tokens. Colors only from --dsw-* tokens. */
+.field {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  display: inline-flex;
+  min-width: 160px;
+  height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-md);
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-layer-1);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: left;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--dsw-alias-border-l3);
+}
+
+.trigger:focus-visible,
+.open {
+  border-color: var(--dsw-alias-state-business-primary);
+  outline: none;
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: var(--dsw-alias-label-dimmed);
+}
+
+.icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Portaled card: fixed coordinates come from useAnchoredPosition; layer above modal overlays like Menu's portal. */
+.panel {
+  position: fixed;
+  z-index: 1100;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: var(--dsw-radius-lg);
+  /* Same translucent menu material as upstream's schedule PickerPopover: the fill is 0.58 / 0.45 alpha
+     and only reads as solid with the blur behind it. */
+  background: var(--dsw-specific-menu);
+  backdrop-filter: var(--dsw-menu-backdrop-filter);
+  --dsw-elevation-stroke-color: var(--dsw-alias-border-l1);
+  box-shadow: var(--dsw-elevation-prominent);
+}

@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify package and consumers
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # typecheck → unit tests → build → packed contents → React 18 SSR → Next.js 16 build
+      - run: npm run verify
+
+  storybook:
+    name: Storybook coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - run: npm ci
+
+      # The Storybook config reads dist/tokens.css.
+      - run: npm run build
+
+      - name: Install Storybook dependencies
+        working-directory: storybook
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck stories and require a page for every public export
+        working-directory: storybook
+        run: bun run check
+
+      - name: Build Storybook
+        working-directory: storybook
+        run: bun run build

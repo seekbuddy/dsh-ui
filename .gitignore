@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.build/
+.test-dist/
+*.log
+*.tgz
+.DS_Store
+storybook-static/
+.doc-examples/

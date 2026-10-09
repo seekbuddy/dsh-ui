@@ -1,0 +1,42 @@
+/* Single-date panel — SeekBuddy extension layer. Layout
+ * constants are local; colors and type come only from --dsw-alias-* / --dsw-font-* tokens. */
+.picker {
+  display: inline-grid;
+  gap: 12px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.footer {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.summary {
+  min-width: 0;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.today {
+  flex: none;
+  color: var(--dsw-alias-state-business-primary);
+}
+
+.today:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 1px;
+}

@@ -1,0 +1,28 @@
+{
+  "name": "seekbuddy-dsh-ui-storybook",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "@seekbuddy/dsh-ui 的组件文档站（Storybook 10 + Vite）：读 ../src 出 autodocs props 表、样张与用法源码。依赖独立安装，不进发布包。",
+  "scripts": {
+    "dev": "storybook dev --port 9109 --no-open",
+    "build": "storybook build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check:coverage": "node scripts/check-coverage.mjs",
+    "check": "bun run typecheck && bun run check:coverage && node scripts/api-docs.mjs --check",
+    "docs:api": "node scripts/api-docs.mjs"
+  },
+  "devDependencies": {
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/react-vite": "^10.6.0",
+    "@types/react": "~18.3.1",
+    "@types/react-dom": "~18.3.1",
+    "@vitejs/plugin-react": "^5.0.4",
+    "react": "^18.3.1",
+    "react-docgen-typescript": "2.4.0",
+    "react-dom": "^18.3.1",
+    "storybook": "^10.6.0",
+    "typescript": "^5.9.0",
+    "vite": "7.1.4"
+  }
+}

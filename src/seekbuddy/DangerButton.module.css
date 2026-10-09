@@ -1,0 +1,21 @@
+/* Error-tone outline capsule: only the label, stroke and state fills change. Geometry, sizes and the
+ * disabled opacity come from the upstream Button this wraps (it is imported first, so these single-class
+ * rules land later in the cascade and win over `.outline` at equal specificity). */
+.danger {
+  color: var(--dsw-alias-state-error-primary);
+  border-color: var(--dsw-alias-state-error-primary);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover-danger);
+}
+
+.danger:active:not(:disabled) {
+  background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 18%, transparent);
+}
+
+.danger:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}

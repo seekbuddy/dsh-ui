@@ -1,0 +1,89 @@
+/* Message — stacked transient banners. Each row repeats the upstream Toast recipe
+ * (contrast pill, inverted label, 14 px radius, lv3 shadow, 120 px from the top, z-index 1100,
+ * click-through) so shell and page feedback look alike; the stack only adds the column layout and
+ * a per-type icon colour. Slide-in 160 ms, fade-out 1000 ms — the fade must agree with FADE_MS in
+ * Message.tsx, which removes the row when it ends. */
+.stack {
+  position: fixed;
+  top: 120px;
+  left: 50%;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: min(560px, calc(100vw - 48px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.message {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-button-contrast-fill);
+  color: var(--dsw-alias-label-primary-inverted);
+  font: var(--dsw-font-s-14);
+  box-shadow: var(--dsw-shadow-lv3);
+  animation: seekbuddy-message-in 160ms ease-out;
+}
+
+.leaving {
+  animation: seekbuddy-message-out 1000ms ease forwards;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+}
+
+.content {
+  min-width: 0;
+}
+
+/* One colour per type; info and loading ride the inverted label colour. */
+.success .icon {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.error .icon {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.warning .icon {
+  color: var(--dsw-alias-state-warn-label);
+}
+
+@keyframes seekbuddy-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes seekbuddy-message-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion drops the slide; the fade is an opacity change and still ends the row on time. */
+@media (prefers-reduced-motion: reduce) {
+  .message {
+    animation: none;
+  }
+
+  .leaving {
+    animation: seekbuddy-message-out 1000ms ease forwards;
+  }
+}

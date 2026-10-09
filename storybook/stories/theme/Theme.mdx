@@ -1,0 +1,146 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { ThemeDemo, ThemeApiProbe } from './ThemeDemo'
+import { THEME_BOOTSTRAP_SCRIPT, THEME_STORAGE_KEY, DEFAULT_PREFERENCE } from '@seekbuddy/dsh-ui/theme/bootstrap'
+
+<Meta title="镜像层（上游同步）/主题/主题 API" />
+
+# 主题 API（`@seekbuddy/dsh-ui/theme`）
+
+明暗主题的运行时：持久化用户偏好（`light` / `dark` / `system`）、跟随系统、把结果写到 `document.documentElement.style.colorScheme` 与 `body[data-ds-dark-theme]`，并让 React 组件订阅当前明暗。上游同步件，源码（`src/theme-core.ts` / `theme.ts` / `theme-bootstrap.ts`）不改。
+
+**什么时候用**：自己掌管 `<html>` / `<body>` 的应用壳需要用户可切换、可记住的明暗主题时；组件要按明暗做条件渲染（比如换一张图）时用 `useIsDark`。
+
+**什么时候不用**：跑在 DSH Web 壳里的插件——主题由宿主壳管，插件只消费 `--dsw-alias-*`，不要调 `setThemePreference` / `initializeTheme`；只是想让颜色随主题变，直接用 token，不需要读 `useIsDark`。
+
+**可访问性**：应用主题同时写 `colorScheme`，浏览器原生控件、滚动条、表单会跟着切；`system` 跟随 `prefers-color-scheme` 且在系统切换时实时更新。切换按钮要有可访问名与 `aria-pressed`（见下面演示）。
+
+**相关 token**：全部 `--dsw-alias-*` 在 `body` 与 `body[data-ds-dark-theme]` 下各定义一套，切换即生效；列表见「Token 色板」页。
+
+## `ThemePreference`：三个值
+
+```ts
+export const THEME_PREFERENCES = ['light', 'dark', 'system'] as const
+export type ThemePreference = (typeof THEME_PREFERENCES)[number]
+export const DEFAULT_PREFERENCE: ThemePreference = 'system'
+export const THEME_STORAGE_KEY = 'dsh-ui-primitives.theme-preference'
+```
+
+| 值       | 含义     | 解析为暗色的条件                                                      |
+| :------- | :------- | :-------------------------------------------------------------------- |
+| `light`  | 固定浅色 | 永不                                                                  |
+| `dark`   | 固定深色 | 总是                                                                  |
+| `system` | 跟随系统 | `matchMedia('(prefers-color-scheme: dark)')` 命中；系统切换时自动重算 |
+
+持久化在 `localStorage[THEME_STORAGE_KEY]`；存了非法值或读不到存储时回退 `DEFAULT_PREFERENCE`（`system`）。
+
+## 现场演示
+
+<ThemeDemo />
+
+右上角工具栏的「主题」与这里的按钮切的是**同一个开关** `body[data-ds-dark-theme]`：工具栏直接改 DOM 属性（不经过 `setThemePreference`，也不写 localStorage），所以切完工具栏后 `useIsDark()` 的读数会停在运行时上次解析的值，直到你点一下这里的按钮；反过来点这里的按钮会覆盖工具栏的结果，并把偏好写进 localStorage（刷新后站体重新以工具栏状态为准）。真实应用里只有一条路——`setThemePreference`——不会出现两边不一致。
+
+## 用法
+
+### 应用启动：`initializeTheme()`
+
+在 React 挂载前（入口文件顶层）调用一次，读取存储、挂系统监听、把主题写到 DOM，返回当前偏好：
+
+```tsx
+import { initializeTheme } from '@seekbuddy/dsh-ui/theme'
+import '@seekbuddy/dsh-ui/tokens.css'
+
+initializeTheme()
+createRoot(document.getElementById('root')!).render(<App />)
+```
+
+重复调用是幂等的（只会重新应用一次当前偏好）。SSR 应用还需要首屏内联脚本，见下一节。
+
+### 组件里：`useThemePreference` / `useIsDark` / `setThemePreference`
+
+```tsx
+import { THEME_PREFERENCES, setThemePreference, useIsDark, useThemePreference } from '@seekbuddy/dsh-ui/theme'
+import type { ThemePreference } from '@seekbuddy/dsh-ui/theme'
+
+const PREFERENCE_LABELS: Record<ThemePreference, string> = { light: '浅色', dark: '深色', system: '跟随系统' }
+
+export function ThemeSwitch() {
+  const preference = useThemePreference() // 'light' | 'dark' | 'system'
+  const isDark = useIsDark() // 解析后的明暗，system 下随系统变
+  return (
+    <div role="group" aria-label="主题">
+      {THEME_PREFERENCES.map((item) => (
+        <Button key={item} aria-pressed={preference === item} onClick={() => setThemePreference(item)}>
+          {PREFERENCE_LABELS[item]}
+        </Button>
+      ))}
+      <img src={isDark ? darkHero : lightHero} alt="" />
+    </div>
+  )
+}
+```
+
+两个 Hook 基于 `useSyncExternalStore`，首次订阅会顺手 `initializeTheme()`，服务端快照与客户端一致。`setThemePreference` 立即应用到 DOM、写 localStorage（写失败静默）并通知所有订阅者。
+
+### 其余导出
+
+| 导出                       | 一句话                                                                               |
+| :------------------------- | :----------------------------------------------------------------------------------- |
+| `THEME_PREFERENCES`        | 三个合法值的只读元组，渲染切换按钮时遍历它                                           |
+| `THEME_STORAGE_KEY`        | localStorage 键名 `dsh-ui-primitives.theme-preference`，bootstrap 脚本里硬编码同一值 |
+| `DEFAULT_PREFERENCE`       | `'system'`，存储缺失 / 非法时的回退                                                  |
+| `isThemePreference(value)` | 类型守卫，校验来自存储、URL、接口的字符串                                            |
+| `resolveDark(preference)`  | 纯函数：偏好 → 是否暗色（`system` 查一次 `matchMedia`）                              |
+| `applyTheme(preference)`   | 只把偏好写到 DOM（`colorScheme` + `data-ds-dark-theme`），不存储、不通知             |
+| `getThemePreference()`     | 非 Hook 读当前偏好（事件回调、非 React 代码用）                                      |
+| `getIsDark()`              | 非 Hook 读当前是否暗色                                                               |
+
+现场求值（真值来自入口导出，非手抄；`resolveDark('system')` 与 `getIsDark()` 随系统 / 当前偏好变）：
+
+<ThemeApiProbe />
+
+## 首屏内联脚本：`@seekbuddy/dsh-ui/theme/bootstrap`
+
+SSR / 静态输出的页面如果只在 React 挂载后 `initializeTheme()`，存了深色偏好的用户会先看到一帧浅色。`/theme/bootstrap` 入口不依赖 React，导出 `THEME_BOOTSTRAP_SCRIPT`（以及同值的 `DEFAULT_PREFERENCE`、`THEME_STORAGE_KEY`），内联到 `<body>` 内容之前即可。Next.js App Router 根布局的接法：
+
+```tsx
+import '@seekbuddy/dsh-ui/tokens.css'
+import { THEME_BOOTSTRAP_SCRIPT } from '@seekbuddy/dsh-ui/theme/bootstrap'
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html suppressHydrationWarning>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+        {children}
+      </body>
+    </html>
+  )
+}
+```
+
+这个 `dangerouslySetInnerHTML` 只允许喂包内固定常量，不得替换成来自用户、接口或配置文件的字符串。脚本本体（`src/theme-bootstrap.ts`，实际是一行压缩字符串，这里展开便于阅读）做的事与 `initializeTheme()` 完全一致：
+
+```js
+;(function () {
+  try {
+    var k = 'dsh-ui-primitives.theme-preference',
+      v = localStorage.getItem(k)
+    if (v !== 'light' && v !== 'dark' && v !== 'system') v = 'system'
+    var d = v === 'dark' || (v === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+    document.documentElement.style.colorScheme = d ? 'dark' : 'light'
+    document.body.toggleAttribute('data-ds-dark-theme', d)
+  } catch (e) {
+    var d = matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.style.colorScheme = d ? 'dark' : 'light'
+    document.body.toggleAttribute('data-ds-dark-theme', d)
+  }
+})()
+```
+
+入口导出的真实值（现场从 `@seekbuddy/dsh-ui/theme/bootstrap` 读取，非手抄）：`DEFAULT_PREFERENCE` = <code>{DEFAULT_PREFERENCE}</code>，`THEME_STORAGE_KEY` = <code>{THEME_STORAGE_KEY}</code>，`THEME_BOOTSTRAP_SCRIPT` 长度 <code>{THEME_BOOTSTRAP_SCRIPT.length}</code> 字符：
+
+<pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+  <code>{THEME_BOOTSTRAP_SCRIPT}</code>
+</pre>
+
+扩展 `ThemePreference`（比如新增一个真正的模式）必须同步改这段脚本、存储校验与解析规则，否则首屏与 hydration 后主题不一致。品牌 A/B 之类不改明暗语义的需求用正交的 body 属性，不要动 preference。

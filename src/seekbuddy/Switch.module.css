@@ -1,0 +1,112 @@
+/* Capsule switch — SeekBuddy extension layer. antd shape with upstream's colours: brand track when on,
+ * grey track when off; no transition so reduced-motion needs no special case. `appearance: none`
+ * keeps native button chrome (Safari) from ignoring the radius, and the pill / thumb pair
+ * `corner-shape: round` with their uncapped radii because the theme's corner-shape.css turns every
+ * rounded corner into a superellipse (squared-off capsule ends otherwise). Geometry lives in three
+ * private layout variables so the three sizes and the with-children form share one rule set.
+ *
+ * Colours follow upstream's `Switch`: on track `--dsw-alias-brand-primary` with the thumb and track
+ * text in `--dsw-alias-label-primary-foreground` (dark on light in the dark theme, light on dark in
+ * the light theme); off thumb `--dsw-alias-switch-thumb`. Off track is `color-mix` of
+ * `--dsw-alias-label-primary` at 40 %: a 40 % ink wash in light and a 40 % white wash in dark, which
+ * keeps the thumb visible against the track in both themes (`border-l3`, upstream's off track, is a
+ * 12–16 % wash and fades under the thumb next to antd-sized labels). */
+.switch {
+  --switch-height: 20px;
+  --switch-thumb: 16px;
+  --switch-pad: 2px;
+  appearance: none;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: calc(var(--switch-height) * 1.8);
+  height: var(--switch-height);
+  min-height: 0;
+  margin: 0;
+  padding: var(--switch-pad);
+  border: 0;
+  border-radius: 999px;
+  corner-shape: round;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 40%, transparent);
+  color: var(--dsw-alias-label-primary-foreground);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.large {
+  --switch-height: 22px;
+  --switch-thumb: 18px;
+}
+
+.small {
+  --switch-height: 16px;
+  --switch-thumb: 12px;
+}
+
+.on {
+  background: var(--dsw-alias-brand-primary);
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.switch:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}
+
+.thumb {
+  position: absolute;
+  top: var(--switch-pad);
+  inset-inline-start: var(--switch-pad);
+  width: var(--switch-thumb);
+  height: var(--switch-thumb);
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--dsw-alias-switch-thumb);
+}
+
+.on .thumb {
+  background: var(--dsw-alias-label-primary-foreground);
+  inset-inline-start: calc(100% - var(--switch-thumb) - var(--switch-pad));
+}
+
+/* Track content: leaves room for the thumb on the side it currently occupies. */
+.inner {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding-inline: calc(var(--switch-thumb) + var(--switch-pad) + 4px) 6px;
+  font: var(--dsw-font-xxs-12);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.large .inner {
+  padding-inline: calc(var(--switch-thumb) + var(--switch-pad) + 5px) 8px;
+  font: var(--dsw-font-xs-13);
+  line-height: 1;
+}
+
+.small .inner {
+  padding-inline: calc(var(--switch-thumb) + var(--switch-pad) + 3px) 5px;
+  font: var(--dsw-font-xxxs-11);
+  line-height: 1;
+}
+
+.on .inner {
+  padding-inline: 6px calc(var(--switch-thumb) + var(--switch-pad) + 4px);
+}
+
+.on.large .inner {
+  padding-inline: 8px calc(var(--switch-thumb) + var(--switch-pad) + 5px);
+}
+
+.on.small .inner {
+  padding-inline: 5px calc(var(--switch-thumb) + var(--switch-pad) + 3px);
+}

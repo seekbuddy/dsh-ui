@@ -1,0 +1,97 @@
+/* Range panel — SeekBuddy extension layer. Layout constants
+ * are local; colors and type come only from --dsw-alias-* / --dsw-font-* tokens. */
+.picker {
+  display: inline-grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'presets calendar'
+    'footer footer';
+  column-gap: 16px;
+  row-gap: 12px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.presets {
+  grid-area: presets;
+  display: grid;
+  min-width: 96px;
+  align-content: start;
+  gap: 2px;
+  margin: 0;
+  padding: 0 12px 0 0;
+  border-right: 0.5px solid var(--dsw-alias-border-l1);
+  list-style: none;
+}
+
+.presets:focus-visible {
+  border-radius: var(--dsw-radius-sm);
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}
+
+.preset {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+  border-radius: var(--dsw-radius-sm);
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  font: var(--dsw-font-xs-13);
+  white-space: nowrap;
+}
+
+.preset:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.presetSelected {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-multi-select);
+}
+
+/* Keyboard focus lives on the list; the highlighted preset shows the ring. */
+.presets:focus-visible [data-active] {
+  box-shadow: inset 0 0 0 1px var(--dsw-alias-state-business-primary);
+}
+
+.presetLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.check {
+  flex: none;
+  color: var(--dsw-alias-state-business-primary);
+}
+
+.calendar {
+  grid-area: calendar;
+}
+
+.footer {
+  grid-area: footer;
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.status {
+  min-width: 0;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xs-13);
+}
+
+.actions {
+  display: inline-flex;
+  flex: none;
+  gap: 8px;
+}

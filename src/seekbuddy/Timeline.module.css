@@ -1,0 +1,151 @@
+/* Run timeline — SeekBuddy extension layer. Layout constants are local; every color and
+ * type value comes from --dsw-alias-* / --dsw-font-* so the component follows the
+ * theme wherever it renders. */
+.timeline {
+  --timeline-badge: 16px;
+  --timeline-gap: 20px;
+  display: grid;
+  gap: 28px;
+}
+
+.heading {
+  margin: 0 0 20px;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-s-14);
+}
+
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--timeline-badge) minmax(0, 1fr);
+  column-gap: var(--timeline-gap);
+  padding-bottom: 28px;
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+/* Rail: from just below the badge to the bottom of the entry; the last entry keeps a short tail. */
+.rail {
+  position: absolute;
+  top: calc(var(--timeline-badge) + 6px);
+  bottom: 0;
+  left: calc(var(--timeline-badge) / 2);
+  width: 1px;
+  background: var(--dsw-alias-border-l1);
+}
+
+.item:last-child .rail {
+  bottom: -20px;
+}
+
+.badgeCell {
+  display: inline-flex;
+  width: var(--timeline-badge);
+  height: var(--timeline-badge);
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+}
+
+.badge {
+  width: var(--timeline-badge);
+  height: var(--timeline-badge);
+}
+
+.succeeded {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.failed {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.canceled {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.running {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.glyph {
+  fill: none;
+  stroke: var(--dsw-alias-label-primary-inverted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.body {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  text-align: left;
+}
+
+.select {
+  padding: 0;
+  border: 0;
+  border-radius: var(--dsw-radius-sm);
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.select:hover .title {
+  color: var(--dsw-alias-label-primary-bluish);
+}
+
+.select:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 4px;
+}
+
+.title {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-s-14);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 4px;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xs-13);
+}
+
+.message {
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xs-13);
+  overflow-wrap: anywhere;
+}
+
+.messageError {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

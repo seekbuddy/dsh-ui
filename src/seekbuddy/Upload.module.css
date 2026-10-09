@@ -1,0 +1,184 @@
+/* Upload — file picker + status list. Two triggers (outline Button / dashed drop zone) over
+ * one list. The dashed frame and 12 px radius follow Empty; the progress bar is a 2 px track
+ * inlined here rather than a separate component. Drag highlight is a colour swap, no motion. */
+.upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Kept in the DOM for the browser file dialog; the trigger / drop zone is the focus target. */
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trigger {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.hint {
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xs-13);
+}
+
+.dropzone {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px;
+  border: 1px dashed var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-lg);
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone:hover:not(.disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dropzone:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}
+
+.dropIcon {
+  display: inline-flex;
+  margin-bottom: 4px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dropTitle {
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-s-strong-14);
+}
+
+.dragging {
+  border-color: var(--dsw-alias-state-business-primary);
+}
+
+.dragging .dropIcon,
+.dragging .dropTitle {
+  color: var(--dsw-alias-state-business-primary);
+}
+
+.disabled {
+  color: var(--dsw-alias-label-dimmed);
+  cursor: not-allowed;
+}
+
+.disabled .dropIcon,
+.disabled .dropTitle,
+.disabled .hint {
+  color: var(--dsw-alias-label-dimmed);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* icon | name | actions on the first row; meta under the name; the progress track spans name + actions. */
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: var(--dsw-radius-sm);
+}
+
+.item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.fileIcon {
+  display: inline-flex;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.name {
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--dsw-font-xs-13);
+  text-align: left;
+}
+
+.nameButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.nameButton:hover {
+  text-decoration: underline;
+}
+
+.nameButton:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+  border-radius: var(--dsw-radius-xs);
+}
+
+.actions {
+  display: flex;
+  gap: 2px;
+}
+
+.action {
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+}
+
+.meta {
+  grid-column: 2;
+  display: flex;
+  gap: 8px;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xxs-12);
+}
+
+.error .fileIcon,
+.error .name,
+.error .status {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.track {
+  grid-column: 2 / -1;
+  display: block;
+  height: 2px;
+  margin-top: 4px;
+  border-radius: 999px;
+  corner-shape: round;
+  background: var(--dsw-alias-interactive-bg-active);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--dsw-alias-state-business-primary);
+}

@@ -1,0 +1,120 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { extractMarkdownPlainText } from '@seekbuddy/dsh-ui/markdown'
+
+<Meta title="镜像层（上游同步）/Markdown/extractMarkdownPlainText" />
+
+export const sample = [
+  '## Release **0.2.0**',
+  '',
+  '本次同步了 `dsh-v0.1.5-rc.2`，详见 [发布指南](https://example.com)。',
+  '',
+  '> 引用：一切皆插件。',
+  '',
+  '- 第一项',
+  '- 第二项',
+  '',
+  '| 组件 | 状态 |',
+  '| --- | --- |',
+  '| Button | 完成 |',
+  '',
+  '```ts',
+  'const x = 1',
+  '```',
+  '',
+  '<b>原生 HTML</b> 保持字面，![图片 alt](https://example.com/a.png) 只留 alt。',
+].join('\n')
+
+export const Output = ({ mode }) => (
+  <pre
+    style={{
+      margin: 0,
+      padding: 12,
+      whiteSpace: 'pre-wrap',
+      overflowWrap: 'anywhere',
+      border: '1px solid var(--dsw-alias-border-l2)',
+      borderRadius: 8,
+      font: 'var(--dsw-font-markdown-code-block)',
+      color: 'var(--dsw-alias-label-primary)',
+      background: 'var(--dsw-alias-markdown-code-block)',
+    }}
+  >
+    {extractMarkdownPlainText(sample, mode === undefined ? {} : { mode })}
+  </pre>
+)
+
+# extractMarkdownPlainText
+
+把 Markdown 投影成**纯文本**，给紧凑摘要与标签用（会话标题、通知正文、列表预览）。上游同步件，源码不改。
+
+- **什么时候用**：只需要文字、不需要排版的地方——最近会话列表的一行预览、系统通知、搜索索引。
+- **什么时候不用**：要给人看完整排版的地方（`MarkdownText`）；用户自己敲的文本本来就是纯文本（直接渲染文本节点；要把引用装饰成芯片，先经根入口 `projectUserText`）。
+- **解析口径**：与渲染器的**流式 GFM 语法**（`parseGfm`）共用一套 grammar，所以剥掉的标记正好就是渲染器会画的那些；**不含数学扩展**，`$…$` 原样保留为文本。
+- **保留规则**：原生 HTML 字面保留；链接保留标签文字、丢掉 URL；图片保留 alt；行内 / 围栏代码保留源文本；表格按行 `\n`、单元格 `\t` 拼接；`---` 分隔线与 link 定义丢弃；连续空白压成一个空格，三个以上空行压成一个。
+
+## 签名
+
+```ts
+import { extractMarkdownPlainText } from '@seekbuddy/dsh-ui/markdown'
+import type { MarkdownPlainTextMode, MarkdownPlainTextOptions } from '@seekbuddy/dsh-ui/markdown'
+
+function extractMarkdownPlainText(markdown: string, options?: MarkdownPlainTextOptions): string
+
+type MarkdownPlainTextMode = 'all' | 'first-line' | 'first-paragraph'
+
+interface MarkdownPlainTextOptions {
+  /** 投影边界，默认整篇文档。 */
+  mode?: MarkdownPlainTextMode
+}
+```
+
+## `mode` 三值
+
+| mode                | 返回                                                                                   | 典型用途                 |
+| :------------------ | :------------------------------------------------------------------------------------- | :----------------------- |
+| `'all'`（默认）     | 整篇文档的纯文本，块之间空一行                                                         | 通知正文、搜索索引       |
+| `'first-line'`      | 第一条非空行                                                                           | 列表单行预览             |
+| `'first-paragraph'` | 深度优先找到的第一个**段落**节点（标题、列表、代码都不算）；没有段落时退回第一条非空行 | 会话摘要——跳过开头的标题 |
+
+## 输入 / 输出对照
+
+下面的输出不是手抄，是页面加载时 `import` 函数现场跑出来的。
+
+### 输入
+
+<pre
+  style={{
+    margin: 0,
+    padding: 12,
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'anywhere',
+    border: '1px solid var(--dsw-alias-border-l2)',
+    borderRadius: 8,
+    font: 'var(--dsw-font-markdown-code-block)',
+    color: 'var(--dsw-alias-label-primary)',
+    background: 'var(--dsw-alias-markdown-code-block)',
+  }}
+>
+  {sample}
+</pre>
+
+### `mode: 'all'`（默认）
+
+<Output />
+
+### `mode: 'first-line'`
+
+<Output mode="first-line" />
+
+### `mode: 'first-paragraph'`
+
+<Output mode="first-paragraph" />
+
+## 用法
+
+```ts
+// 最近会话列表的一行预览
+const preview = extractMarkdownPlainText(session.lastMessage, { mode: 'first-paragraph' })
+
+// 通知正文（整篇）
+const body = extractMarkdownPlainText(reply)
+```

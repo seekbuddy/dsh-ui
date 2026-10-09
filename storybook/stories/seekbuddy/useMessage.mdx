@@ -1,0 +1,28 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { useMessage } from '@seekbuddy/dsh-ui/seekbuddy'
+
+<Meta title="SeekBuddy 扩展层/useMessage（消息 API）" />
+
+# `useMessage()`
+
+`MessageProvider` 的配套 Hook，返回最近一层 Provider 的 `MessageApi`；对象引用在 Provider 存续期间稳定，可以直接放进 effect 依赖。Provider 外调用抛 `useMessage() must be called inside a <MessageProvider>`。
+
+```ts
+const message = useMessage()
+
+message.success('技能已安装') // 3 秒后淡出
+message.error('卸载失败：实例未响应', 5) // 5 秒
+const close = message.loading('正在同步…') // loading 默认常驻，拿返回值手动关
+message.open({ key: 'sync', type: 'loading', content: '正在发布…' })
+message.open({ key: 'sync', type: 'success', content: '已发布', duration: 2 }) // 同 key 原地更新
+message.destroy('sync') // 关一条
+message.destroy() // 关全部
+```
+
+| 方法                                                                     | 说明                                                                                              |
+| :----------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| `open(options)`                                                          | `type` / `content` / `duration`（秒，默认 3，`0` 常驻）/ `key` / `icon` / `onClose`；返回关闭函数 |
+| `success` / `info` / `warning` / `error` / `loading(content, duration?)` | `open` 的类型简写；`loading` 默认 `duration: 0`                                                   |
+| `destroy(key?)`                                                          | 关闭指定 key，或不传关闭全部                                                                      |
+
+实际演示见 **Message** 页；这里只登记导出（`typeof useMessage === 'function'`：{String(typeof useMessage === 'function')}）。

@@ -1,0 +1,6 @@
+/* 码本身自带白底与静区，容器只负责圆角与行内布局；
+   宽高由 size prop 走行内样式，方便调用方按弹窗大小定 */
+.qr {
+  display: block;
+  border-radius: var(--dsw-radius-sm);
+}

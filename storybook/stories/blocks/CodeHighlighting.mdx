@@ -1,0 +1,80 @@
+import { useState } from 'react'
+import { Meta } from '@storybook/addon-docs/blocks'
+import { Input } from '@seekbuddy/dsh-ui'
+import { CODE_HIGHLIGHT_EXTENSIONS, languageForPath, useCodeHighlighter } from '@seekbuddy/dsh-ui/blocks'
+
+<Meta title="镜像层（上游同步）/Blocks/代码高亮" />
+
+# 代码高亮：`languageForPath` / `useCodeHighlighter`
+
+`dsh-v0.1.7-rc.1` 新增的三件，把 `ReadBlock` / `DiffBlock` 内部用的"按文件名选语法 + 懒加载 Shiki 语法"开放出来，给自建的源码视图用。上游从根入口导出，本包放在 `/blocks`：它们会拉到 Shiki 高亮器，`assertLightweightRoot` 不许根入口碰（见 `UPSTREAM.md`）。上游同步件，源码不改；下面的结果都是页面上现算的。
+
+- **`CODE_HIGHLIGHT_EXTENSIONS`**：认得的扩展名清单（小写、不带点）。
+- **`languageForPath(path)`**：按文件名末尾扩展名选语法，认不得返回 `undefined`（此时按纯文本显示）。两种路径分隔符都认。
+- **`useCodeHighlighter(language)`**：返回一个稳定的 `(code) => HighlightSpan[][] | undefined`，每行一组 token。语法还没加载完或不认得时返回 `undefined`，调用方按纯文本回退；语法加载完会自动触发重渲染。
+
+**什么时候用**：自己画源码 / 片段视图（文件预览、行内代码卡），又想和对话里的代码块同一套配色。
+
+**什么时候不用**：整段 Markdown 或围栏代码块直接用 `MarkdownText` / `CodeBlock`；工具结果的读取与 diff 用 `ReadBlock` / `DiffBlock`，它们已经内置。
+
+**可访问性**：只产出着色 token，语义与可访问性由调用方的容器负责（通常是 `<pre><code>`）。
+
+**相关 token**：颜色来自 `shiki.css` 的主题变量，跟随明暗主题；本页只用 `--dsw-alias-bg-layer-2`、`--dsw-alias-border-l2`、`--dsw-alias-label-secondary` 做容器。
+
+export const box = {
+  display: 'grid',
+  gap: 8,
+  padding: 12,
+  borderRadius: 8,
+  background: 'var(--dsw-alias-bg-layer-2)',
+  border: '1px solid var(--dsw-alias-border-l2)',
+  font: 'var(--dsw-font-xs-13)',
+  color: 'var(--dsw-alias-label-secondary)',
+}
+
+## 认得的扩展名（{CODE_HIGHLIGHT_EXTENSIONS.length} 个）
+
+<div style={box}>{CODE_HIGHLIGHT_EXTENSIONS.join(' · ')}</div>
+
+## 试一试
+
+export const SAMPLE = `export function greet(name: string): string {
+  // 打个招呼
+  return \`hello, \${name}\`
+}`
+
+export const HighlightDemo = () => {
+  const [path, setPath] = useState('src/greet.ts')
+  const language = languageForPath(path)
+  const highlight = useCodeHighlighter(language)
+  const lines = highlight(SAMPLE)
+  return (
+    <div style={box}>
+      <Input
+        value={path}
+        onChange={(event) => setPath(event.target.value)}
+        placeholder="文件名，例如 a.py、b.rs、c.txt"
+      />
+      <output>languageForPath → {language ?? 'undefined（纯文本）'}</output>
+      <pre style={{ margin: 0, font: 'var(--dsw-font-markdown-code-block)' }}>
+        <code>
+          {lines === undefined
+            ? SAMPLE
+            : lines.map((line, index) => (
+                <div key={index}>
+                  {line.length === 0
+                    ? ' '
+                    : line.map((span, spanIndex) => (
+                        <span key={spanIndex} style={span.style}>
+                          {span.text}
+                        </span>
+                      ))}
+                </div>
+              ))}
+        </code>
+      </pre>
+    </div>
+  )
+}
+
+<HighlightDemo />

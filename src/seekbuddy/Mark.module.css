@@ -1,0 +1,30 @@
+/* Mark — inline status glyph, one meaning per `kind`. Sized by the SVG's own width /
+ * height; `line-height: 0` + `vertical-align: middle` keep it on the text baseline without
+ * growing the line box. No margins: spacing belongs to the caller's row. */
+.mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  vertical-align: middle;
+  border-radius: var(--dsw-radius-xs);
+  line-height: 0;
+  cursor: help;
+}
+
+.plain {
+  cursor: default;
+}
+
+/* Same business-blue ring as every extension-layer control (Tabs / Switch / Card). */
+.mark:focus-visible {
+  /* Width and colour come from focus.css's global :focus-visible rule (hidden under pointer modality). */
+  outline-style: solid;
+  outline-offset: 2px;
+}
+
+/* One colour class per kind. */
+.official {
+  color: var(--dsw-alias-state-business-primary);
+}
