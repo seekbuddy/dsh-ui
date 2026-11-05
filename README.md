@@ -77,7 +77,7 @@ Import only from these entries; anything else under `dist/` is internal.
 | `@seekbuddy/dsh-ui` | Lightweight controls and utilities: `Button`, `Input`, `Pill`, `Tag`, `Switch`, `Checkbox`, `Menu`, `MenuSurface`, `Modal`, `Tooltip`, `Toast`, `HoverCard`, `SegmentedControl`, `SegmentedTabs`, positioning / modal hooks, and helpers such as `relativeTime`, `fileSizeText`, `rankByName` |
 | `@seekbuddy/dsh-ui/blocks` | Tool-output renderers `TerminalBlock`, `ReadBlock`, `DiffBlock`, `SearchBlock`, `WebBlock`, `JsonTree`; file / link icons `FileTypeIcon`, `LinkIconRegular` / `LinkIconMedium`; code highlighting `languageForPath`, `useCodeHighlighter` (loads Shiki) |
 | `@seekbuddy/dsh-ui/markdown` | `MarkdownText`, `CodeBlock`, `JsonBlock`, `MarkdownDelegateProvider`, `extractMarkdownPlainText` |
-| `@seekbuddy/dsh-ui/icons` | 188 `Icon*` components (94 glyphs × `Regular` / `Medium` stroke), `PermissionIcon*`, `ReferenceIcon*`, `PluginArtwork*`, `GuideArtwork*` |
+| `@seekbuddy/dsh-ui/icons` | 194 `Icon*` components (97 glyphs × `Regular` / `Medium` stroke), `PermissionIcon*`, `ReferenceIcon*`, `PluginArtwork*`, `GuideArtwork*` |
 | `@seekbuddy/dsh-ui/theme` | Theme state, DOM application and React hooks |
 | `@seekbuddy/dsh-ui/theme/bootstrap` | `THEME_BOOTSTRAP_SCRIPT`, an inline script with no React dependency |
 | `@seekbuddy/dsh-ui/seekbuddy` | Extra components ([docs](docs/components/README.md)); the whole entry is a Client Component |

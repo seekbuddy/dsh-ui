@@ -261,7 +261,9 @@ export function CodeBlock({
             />
           ) : (
             <div className={css.banner} data-code-block-banner>
-              <div className={css.infostring}>{lang ?? ''}</div>
+              <div className={css.infostring} data-text-interaction-exclude="">
+                {lang ?? ''}
+              </div>
               <div className={css.action}>
                 <button type="button" className={css.copyButton} onClick={onCopy}>
                   {copied ? copiedLabel : copyLabel}

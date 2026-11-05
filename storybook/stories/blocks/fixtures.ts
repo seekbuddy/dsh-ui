@@ -56,6 +56,7 @@ const codeToolbarLabels = {
 /** TerminalBlock：状态 Pill（信号 / 退出码 / 无退出码）、三种运行态文字、无输出占位，加公共折叠 / 复制文案。 */
 export const terminalLabels: TerminalBlockLabels = {
   ...foldLabels,
+  commandLine: (line: number) => `命令第 ${line} 行`,
   signal: (signal: string) => `信号 ${signal}`,
   exitCode: (exitCode: number) => `退出码 ${exitCode}`,
   noExitCode: '无退出码',

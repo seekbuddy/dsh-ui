@@ -10,7 +10,7 @@ Everything under `src/` except `src/seekbuddy/` is a copy of the DeepSeek Harnes
 theme sheets, with the local adaptations listed in `UPSTREAM.md`.
 
 - Upstream repository: https://github.com/deepseek-ai/deepseek-harness
-- Tag: `dsh-v0.2.0-rc.2`, commit `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Tag: `dsh-v0.2.2-rc.1`, commit `66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db`
 - `packages/client/ui-primitives/src` → `src/` (components, CSS Modules, icons, Markdown renderer)
 - `packages/client/ui-theme/src/styles` → `src/styles/` (`base.css`, `corner-shape.css`,
   `design-platform.css`, `focus.css`, `onboarding.css`, `scrollbar.css`, `gradient-shadow-text.css`,

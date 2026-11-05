@@ -77,7 +77,7 @@ export function Example() {
 | `@seekbuddy/dsh-ui` | 轻量控件与工具：`Button`、`Input`、`Pill`、`Tag`、`Switch`、`Checkbox`、`Menu`、`MenuSurface`、`Modal`、`Tooltip`、`Toast`、`HoverCard`、`SegmentedControl`、`SegmentedTabs`、定位与模态 Hooks，以及 `relativeTime`、`fileSizeText`、`rankByName` 等工具函数 |
 | `@seekbuddy/dsh-ui/blocks` | 工具输出渲染器 `TerminalBlock`、`ReadBlock`、`DiffBlock`、`SearchBlock`、`WebBlock`、`JsonTree`；文件 / 链接图标 `FileTypeIcon`、`LinkIconRegular` / `LinkIconMedium`；代码高亮 `languageForPath`、`useCodeHighlighter`（会加载 Shiki） |
 | `@seekbuddy/dsh-ui/markdown` | `MarkdownText`、`CodeBlock`、`JsonBlock`、`MarkdownDelegateProvider`、`extractMarkdownPlainText` |
-| `@seekbuddy/dsh-ui/icons` | 188 个 `Icon*`（94 个图形 × `Regular` / `Medium` 两档描边）、`PermissionIcon*`、`ReferenceIcon*`、`PluginArtwork*`、`GuideArtwork*` |
+| `@seekbuddy/dsh-ui/icons` | 194 个 `Icon*`（97 个图形 × `Regular` / `Medium` 两档描边）、`PermissionIcon*`、`ReferenceIcon*`、`PluginArtwork*`、`GuideArtwork*` |
 | `@seekbuddy/dsh-ui/theme` | 主题状态、DOM 应用函数与 React Hooks |
 | `@seekbuddy/dsh-ui/theme/bootstrap` | `THEME_BOOTSTRAP_SCRIPT`，不依赖 React 的首屏内联脚本 |
 | `@seekbuddy/dsh-ui/seekbuddy` | 扩展组件（[文档](docs/components/README.zh.md)）；整个入口是 Client Component |

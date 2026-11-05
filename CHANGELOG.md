@@ -8,6 +8,39 @@ breaking changes; they are listed under **Breaking**.
 Upstream DSH synchronizations are recorded with the DSH tag they move to; the full list of local
 changes to the DSH layer lives in [UPSTREAM.md](UPSTREAM.md).
 
+## [Unreleased]
+
+DSH layer synchronized with `dsh-v0.2.2-rc.1` (from `dsh-v0.2.0-rc.2`).
+
+### Breaking
+
+- `projectUserText` and `UserTextReferences` are removed upstream. Split the text yourself and render
+  the pieces with the new `UserTextRun` and `ReferenceChip`.
+- `TerminalBlockLabels` requires `commandLine: (line: number) => string`, the accessible name of a
+  command line that overflows horizontally.
+- `MarkdownDelegate.fileImages` requires `fileDrag: FileDragActions`.
+- `Tooltip` now injects `onPointerEnter` / `onPointerLeave` / `onPointerDown` into its trigger child
+  instead of `onMouseEnter` / `onMouseLeave`.
+- The token `--dsw-specific-sidebar-nav-item-hover` is removed.
+
+### Added
+
+- From upstream, on the root entry: `UserMessageBubble`, `UserTextRun`, `ReferenceChip`, `AnimatedRows`,
+  `useRowDragPreview`, `ZoomControls`, `DOCUMENT_ZOOM`, `InlineEditor`, `HoverCardGroup`,
+  `DraggableImage` and the `FileDragActions` types, `useClipboardCopy`, `QuotePreview`,
+  `isMobileDevice`, `MENU_TRANSITION_MS`. On `/blocks`: `CommandText`. On `/markdown`:
+  `DetailDocument`, `detailDocumentState`, `useDetailDocumentLabels`, `useMarkdownDelegate`,
+  `MarkdownMenuTarget`, `formatQuoteText`. On `/icons`: `ICON_SYMBOLS`, `IconAppsAdd*`,
+  `IconDragHandle*`, `IconSave*`, `PermissionIconAutoReview*`.
+- New optional props from upstream on `Menu`, `HoverCard`, `SegmentedTabs`, `TerminalBlock`, `Tooltip`,
+  `MarkdownText`, `DisclosureRow`, `ImageLightbox` and `MarkdownDelegateProvider`; see UPSTREAM.md.
+- Tokens `--dsw-alias-illustration-*` (six) and `--dsw-alias-state-done-primary`.
+- Storybook pages for every new export.
+
+### Changed
+
+- `@deepseek-ai/dsh-util-code-language` is pinned to `0.2.2-rc.1`.
+
 ## [0.2.0-beta.0] - 2026-10-09
 
 First release under the name `@seekbuddy/dsh-ui`. DSH layer synchronized with `dsh-v0.2.0-rc.2`.

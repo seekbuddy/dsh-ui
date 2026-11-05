@@ -15,7 +15,7 @@ const meta = {
         component: `把**不可信的助手输出** Markdown 渲染成语义化 React 元素：GFM（表格 / 任务列表 / 删除线 / 脚注）、TeX 数学（KaTeX）、围栏代码（Shiki 高亮 + 复制）、文件引用。上游同步件，源码不改。
 
 **什么时候用**：助手消息正文、任何模型生成的 Markdown。\`streaming\` 打开时按块增量解析（尾部两块之外全部冻结缓存），数学在流式期间保持字面，settled 后才交给 KaTeX。
-**什么时候不用**：用户自己敲的文字（直接字面渲染，Markdown 标记不解释；要装饰引用用根入口 \`projectUserText\`）；单独一段代码（直接 \`CodeBlock\`）；只要摘要文字（\`extractMarkdownPlainText\`）。外层**不要再套** \`dangerouslySetInnerHTML\`——本组件的安全策略就是"没有 HTML 进 DOM"。
+**什么时候不用**：用户自己敲的文字（直接字面渲染，Markdown 标记不解释；引用芯片用根入口的 \`UserTextRun\` / \`ReferenceChip\`）；单独一段代码（直接 \`CodeBlock\`）；只要摘要文字（\`extractMarkdownPlainText\`）。外层**不要再套** \`dangerouslySetInnerHTML\`——本组件的安全策略就是"没有 HTML 进 DOM"。
 **可访问性**：输出是标准语义标签（h1–h6 / p / ul / ol / table / blockquote / a / code）。外链带 \`target=_blank rel=noopener noreferrer\`；≥4 列宽表格容器 \`tabIndex=0\` 可键盘滚动；脚注区标题 \`labels.footnotes\` 为读屏专用（sr-only）；文件引用渲染成 \`<button aria-label={label} title={title}>\`；任务列表复选框 \`disabled\` 只读。
 **安全策略**：原生 HTML 按字面文本显示（无 HTML 解析器）；链接协议白名单 \`http: / https: / mailto:\`，相对路径与 \`javascript:\` / \`data:\` 之类全部拆成纯文本；图片只放行绝对 HTTP(S)，其余显示 alt；KaTeX 不开 trusted 命令。
 **labels 规则**：\`labels\` 必须是引用稳定的对象（模块常量或按 locale memo）——新引用会在流式中途丢掉渲染缓存。\`fileMentions\` 只在 settled 渲染生效，流式期间忽略。

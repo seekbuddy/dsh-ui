@@ -1,5 +1,7 @@
 export * from './icons/index.tsx'
 export {
+  PermissionIconAutoReviewMedium,
+  PermissionIconAutoReviewRegular,
   PermissionIconFullAccessMedium,
   PermissionIconFullAccessRegular,
   PermissionIconReadOnlyMedium,

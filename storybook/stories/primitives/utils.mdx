@@ -7,9 +7,15 @@ import {
   focusWithoutRing,
   isDarwinDesktop,
   observeComposition,
+  DOCUMENT_ZOOM,
+  isMobileDevice,
+  MENU_TRANSITION_MS,
   pointerModality,
-  projectUserText,
   rankByName,
+  ReferenceChip,
+  useClipboardCopy,
+  useRowDragPreview,
+  UserTextRun,
   relativeTime,
   writeClipboard,
 } from '@seekbuddy/dsh-ui'
@@ -18,7 +24,7 @@ import {
 
 # 工具函数
 
-根入口 `@seekbuddy/dsh-ui` 导出九个与组件无关的轻量工具：（第九个是 `dsh-v0.2.0-rc.2` 新导出的 `pointerModality`，见页尾）`writeClipboard`、`relativeTime`、`projectUserText`，`dsh-v0.1.5-rc.2` 新增的 `fileSizeText`、`rankByName`，`dsh-v0.1.7-rc.1` 新增的 `isDarwinDesktop`，以及 `dsh-v0.1.7-rc.2` 新增的 `focusWithoutRing`、`observeComposition`。八者都是上游同步件，源码不改；下面的输出都是页面加载时**实际调用**的结果，不是手抄。
+根入口 `@seekbuddy/dsh-ui` 导出的、与具体组件无关的轻量工具：`writeClipboard`、`relativeTime`，`dsh-v0.1.5-rc.2` 新增的 `fileSizeText`、`rankByName`，`dsh-v0.1.7-rc.1` 新增的 `isDarwinDesktop`，`dsh-v0.1.7-rc.2` 新增的 `focusWithoutRing`、`observeComposition`，`dsh-v0.2.0-rc.2` 新导出的 `pointerModality`，以及 `dsh-v0.2.2-rc.1` 新增的用户文本片段 `UserTextRun` / `ReferenceChip`、`useClipboardCopy`、`useRowDragPreview`、`isMobileDevice` 和两个常量 `MENU_TRANSITION_MS`、`DOCUMENT_ZOOM`。都是上游同步件，源码不改；下面的输出都是页面加载时**实际调用**的结果，不是手抄。
 
 export const cardStyle = {
   display: 'grid',
@@ -151,78 +157,122 @@ export const RelativeTimeTable = () => (
 
 <RelativeTimeTable />
 
-## projectUserText
+## `UserTextRun` / `ReferenceChip`
 
 ```ts
-function projectUserText(text: string, sessionLabels: readonly string[]): ReactNode
+function UserTextRun(props: { text: string }): ReactNode
+function ReferenceChip(props: {
+  appearance: 'session' | 'file' | 'folder' | 'skill' | 'command'
+  label: string
+  title: string
+  onActivate?: () => void
+  contextMenuProps?: Pick<HTMLAttributes<HTMLElement>, 'onContextMenu' | 'onKeyDown' | 'tabIndex'>
+}): ReactNode
 ```
 
-**定位**：把**已发送的用户文本**里的引用形式投影成行内芯片，只做展示——记录下来的模型文本仍是唯一真相，投影不改它。所有片段都是行内元素，单行消息不会被拆行。三种装饰来源，按优先级：① 会话的线上形式 `@[label](dsh-session:…)` 折叠成 label；② `sessionLabels` 给出的精确会话标签装饰对应的裸 `@label`；③ 词边界上的 `/name`、`@path`、`@"带空格的路径"` 按形状装饰（`/` 是命令，`@…/` 是文件夹，其余 `@…` 是文件，显示时只留最后一段路径）。
+**定位**：展示用户已发送文本的两种行内片段。`UserTextRun` 是一段按字面渲染的纯文本；`ReferenceChip` 是一个引用芯片（会话、文件、文件夹、技能、命令），带对应图标，`title` 是完整的原始引用。`dsh-v0.2.2-rc.1` 起取代原来的 `projectUserText`：上游不再在组件库里解析文本，改由调用方把文本拆成片段，再用这两个组件逐段渲染。
 
-**什么时候用**：消息气泡、发送队列预览等展示用户已发送文本的地方。`sessionLabels` 传相邻 recall 关联的会话标签，没有就传 `[]`。
+**什么时候用**：消息气泡（`UserMessageBubble`）、发送队列预览等展示用户文本的地方。
 
-**什么时候不用**：渲染助手输出（那是 Markdown，用 `MarkdownText`）；编辑态的输入框（引用在编辑器里是真正的 chip，不是投影）；需要解释 Markdown 的用户文本（它按字面投影，不解释 Markdown 标记）。
+**什么时候不用**：渲染助手输出（Markdown，用 `MarkdownText`）；编辑态的输入框。
 
-**可访问性**：芯片是 `<span>`，`title` 是匹配到的原始文本，图标是装饰性 `ReferenceIcon`；整段仍是可选中、可读屏的普通文本，没有引入交互元素。
+**可访问性**：只读芯片是 `<span>`；传了 `onActivate` 才变成可激活的元素。`contextMenuProps` 只在调用方提供右键菜单时传入。
 
-**相关 token**：`--dsw-alias-state-business-primary`（芯片文字色，来自 `user-text.module.css`）。
-
-输入 / 输出对照（右侧为实际渲染结果）：
-
-export const USER_TEXT_CASES = [
-  {
-    label: '三种来源都有',
-    text: '请使用 /review 检查 @src/components/ 并参考 @[支付重构](dsh-session:session-42)',
-    sessionLabels: ['支付重构'],
-  },
-  {
-    label: '裸 @label 由 sessionLabels 装饰为会话',
-    text: '接着 @支付重构 里的结论继续',
-    sessionLabels: ['支付重构'],
-  },
-  {
-    label: '同一句、不传 sessionLabels → 按形状当成文件',
-    text: '接着 @支付重构 里的结论继续',
-    sessionLabels: [],
-  },
-  {
-    label: '带空格的路径要用引号',
-    text: '看看 @"docs/design notes.md" 第 3 节，末尾标点不算：@README.md。',
-    sessionLabels: [],
-  },
-  {
-    label: '没有引用：原样一个 span',
-    text: '今天下午同步一下进度',
-    sessionLabels: [],
-  },
-]
-
-export const UserTextTable = () => (
-  <table>
-    <thead>
-      <tr>
-        <th>场景</th>
-        <th>输入 `text` / `sessionLabels`</th>
-        <th>渲染结果</th>
-      </tr>
-    </thead>
-    <tbody>
-      {USER_TEXT_CASES.map(({ label, text, sessionLabels }) => (
-        <tr key={label}>
-          <td>{label}</td>
-          <td>
-            <code>{JSON.stringify(text)}</code>
-            <br />
-            <code>{JSON.stringify(sessionLabels)}</code>
-          </td>
-          <td style={{ whiteSpace: 'pre-wrap' }}>{projectUserText(text, sessionLabels)}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
+export const UserTextDemo = () => (
+  <div style={{ ...cardStyle, display: 'block', whiteSpace: 'pre-wrap', font: 'var(--dsw-font-s-14)' }}>
+    <UserTextRun text="请使用 " />
+    <ReferenceChip appearance="command" label="/review" title="/review" />
+    <UserTextRun text=" 检查 " />
+    <ReferenceChip appearance="folder" label="components" title="src/components/" />
+    <UserTextRun text=" 并参考 " />
+    <ReferenceChip appearance="session" label="支付重构" title="dsh-session:session-42" />
+  </div>
 )
 
-<UserTextTable />
+<UserTextDemo />
+
+## `useClipboardCopy(text)`
+
+```ts
+function useClipboardCopy(text: string): { copied: boolean; onCopy: () => void }
+```
+
+**定位**：复制按钮的状态管理：`onCopy` 写入剪贴板（底层是 `writeClipboard`），成功后 `copied` 保持 1 秒再复原；组件卸载时清掉计时器。正在写入或正在显示「已复制」时重复点击不会再写一次。
+
+**什么时候用**：自建的复制按钮、复制卡片，需要和上游一样的「已复制」反馈。
+
+**什么时候不用**：只要一次性写入、不需要反馈时，直接调 `writeClipboard`。
+
+export const ClipboardCopyDemo = () => {
+  const { copied, onCopy } = useClipboardCopy('dsh-session:session-42')
+  return (
+    <div style={cardStyle}>
+      <Button size="sm" variant="outline" onClick={onCopy}>
+        {copied ? '已复制' : '复制会话引用'}
+      </Button>
+    </div>
+  )
+}
+
+<ClipboardCopyDemo />
+
+## `useRowDragPreview(className, inheritedProperties?)`
+
+```ts
+function useRowDragPreview(
+  className: string,
+  inheritedProperties?: readonly `--${string}`[],
+): { start: (event: DragEvent<HTMLElement>, row?: HTMLElement) => void; clear: () => boolean }
+```
+
+**定位**：列表行原生拖动时的拖动预览：`start` 在 `dragstart` 里把这一行复制到屏幕外作为拖动图像，`clear` 在 `dragend` 里清掉，并返回这一行是否发起过拖动。`className` 给预览一个和行一致的不透明底色（WebKit 会把透明像素截成白色）；`inheritedProperties` 列出预览需要从原行复制的 CSS 变量。
+
+**什么时候用**：可拖动排序的会话列表、文件列表。
+
+**注意**：预览节点挂在 `document.body` 上直到拖动结束；在列表里查找行时要限定在列表内部，避免选到预览里的重复文字和 id。
+
+export const RowDragDemo = () => {
+  const drag = useRowDragPreview('')
+  const [state, setState] = useState('拖动下面任意一行')
+  return (
+    <div style={cardStyle}>
+      {['支付重构', '登录页改版'].map((row) => (
+        <div
+          key={row}
+          draggable
+          style={{ padding: '6px 8px', background: 'var(--dsw-alias-bg-layer-1)', borderRadius: 6 }}
+          onDragStart={(event) => {
+            event.dataTransfer.setData('text/plain', row)
+            drag.start(event)
+            setState(`正在拖动：${row}`)
+          }}
+          onDragEnd={() => setState(`拖动结束，clear() = ${String(drag.clear())}`)}
+        >
+          {row}
+        </div>
+      ))}
+      <output style={statusStyle}>{state}</output>
+    </div>
+  )
+}
+
+<RowDragDemo />
+
+## `isMobileDevice()`
+
+是不是移动设备：按 User-Agent 识别 Android、iPhone、iPad、iPod，以及以桌面模式访问的 iPad（`MacIntel` 且有多个触点）。第一次调用的结果会缓存到页面刷新。识别不出的 User-Agent 返回 `false`。
+
+**什么时候用**：只在移动端改变交互（比如不自动聚焦输入框，避免弹出键盘）。
+
+**什么时候不用**：做响应式布局（用 CSS 媒体查询）。
+
+当前浏览器：<code>isMobileDevice() = {String(typeof navigator === 'undefined' ? false : isMobileDevice())}</code>
+
+## 常量 `MENU_TRANSITION_MS` / `DOCUMENT_ZOOM`
+
+`MENU_TRANSITION_MS` 是菜单动画的时长（毫秒），`MenuSurface` 把它写进 `--dsh-menu-enter` 等 CSS 变量；自建浮层想和菜单同步时读它。`DOCUMENT_ZOOM` 是文档预览缩放的范围和预设，`ZoomControls` 的菜单就用它的 `presets`。
+
+<pre>{JSON.stringify({ MENU_TRANSITION_MS, DOCUMENT_ZOOM }, null, 2)}</pre>
 
 ## fileSizeText
 

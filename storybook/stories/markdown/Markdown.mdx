@@ -1,5 +1,10 @@
 import { Meta } from '@storybook/addon-docs/blocks'
-import { extractMarkdownPlainText } from '@seekbuddy/dsh-ui/markdown'
+import {
+  extractMarkdownPlainText,
+  formatQuoteText,
+  useDetailDocumentLabels,
+  useMarkdownDelegate,
+} from '@seekbuddy/dsh-ui/markdown'
 
 <Meta title="镜像层（上游同步）/Markdown/extractMarkdownPlainText" />
 
@@ -47,7 +52,7 @@ export const Output = ({ mode }) => (
 把 Markdown 投影成**纯文本**，给紧凑摘要与标签用（会话标题、通知正文、列表预览）。上游同步件，源码不改。
 
 - **什么时候用**：只需要文字、不需要排版的地方——最近会话列表的一行预览、系统通知、搜索索引。
-- **什么时候不用**：要给人看完整排版的地方（`MarkdownText`）；用户自己敲的文本本来就是纯文本（直接渲染文本节点；要把引用装饰成芯片，先经根入口 `projectUserText`）。
+- **什么时候不用**：要给人看完整排版的地方（`MarkdownText`）；用户自己敲的文本本来就是纯文本（直接渲染文本节点；引用芯片用根入口的 `UserTextRun` / `ReferenceChip`）。
 - **解析口径**：与渲染器的**流式 GFM 语法**（`parseGfm`）共用一套 grammar，所以剥掉的标记正好就是渲染器会画的那些；**不含数学扩展**，`$…$` 原样保留为文本。
 - **保留规则**：原生 HTML 字面保留；链接保留标签文字、丢掉 URL；图片保留 alt；行内 / 围栏代码保留源文本；表格按行 `\n`、单元格 `\t` 拼接；`---` 分隔线与 link 定义丢弃；连续空白压成一个空格，三个以上空行压成一个。
 
@@ -118,3 +123,38 @@ const preview = extractMarkdownPlainText(session.lastMessage, { mode: 'first-par
 // 通知正文（整篇）
 const body = extractMarkdownPlainText(reply)
 ```
+
+# 其他 Markdown 工具
+
+`dsh-v0.2.2-rc.1` 起 `/markdown` 入口还导出下面三个函数。都是上游同步件，源码不改。
+
+## `formatQuoteText(text)`
+
+把用户选中的一段可见文字变成 Markdown 引用：统一换行符后，每行前面加 `> `。引用的行内展示用根入口的 `QuotePreview`。
+
+<pre>{formatQuoteText('第一行\r\n第二行')}</pre>
+
+## `useMarkdownDelegate()`
+
+读取最近一层 `MarkdownDelegateProvider` 提供的导航能力（打开文件、外部链接、右键菜单等）；在 Provider 外面返回空对象。自建的 Markdown 片段想和 `MarkdownText` 走同一套导航时用它。
+
+export const DelegateDemo = () => {
+  const delegate = useMarkdownDelegate()
+  return <code>{`在 Provider 外：${JSON.stringify(Object.keys(delegate))}`}</code>
+}
+
+<DelegateDemo />
+
+## `useDetailDocumentLabels(copy)`
+
+把一组扁平的文案（标题、加载中、重试、复制、代码块工具栏、脚注）拼成 `DetailDocument` 需要的 `labels`，结果按文案做了缓存。用法见 [DetailDocument](?path=/docs/镜像层（上游同步）-markdown-detaildocument--docs)。
+
+export const LabelsDemo = () => {
+  const labels = useDetailDocumentLabels({
+    title: '插件说明', loading: '正在加载', retry: '重试', copy: '复制', copied: '已复制',
+    codeBlock: '代码块', wrap: '自动换行', unwrap: '取消换行', footnotes: '脚注',
+  })
+  return <pre>{JSON.stringify(labels, null, 2)}</pre>
+}
+
+<LabelsDemo />

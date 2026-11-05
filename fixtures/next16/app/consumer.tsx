@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@seekbuddy/dsh-ui'
+import { Button, Checkbox, Modal, RiskConfirmation, SegmentedControl } from '@seekbuddy/dsh-ui'
 import { TerminalBlock } from '@seekbuddy/dsh-ui/blocks'
 import { MarkdownText } from '@seekbuddy/dsh-ui/markdown'
 import { IconCheckOutlineRegular } from '@seekbuddy/dsh-ui/icons'
 import {
+  DangerButton,
   DateField,
   Empty,
   Mark,
@@ -28,6 +29,7 @@ const markdownLabels = {
 }
 
 const terminalLabels = {
+  commandLine: (line: number) => `Command line ${line}`,
   signal: (signal: string) => `Signal ${signal}`,
   exitCode: (code: number) => `Exit ${code}`,
   noExitCode: 'No exit code',
@@ -55,6 +57,11 @@ function Notify() {
 export function Consumer() {
   const dark = useIsDark()
   const [tab, setTab] = useState<'components' | 'tokens'>('components')
+  const [mode, setMode] = useState<'vendor' | 'custom'>('vendor')
+  const [checked, setChecked] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [riskOpen, setRiskOpen] = useState(false)
+  const [acknowledged, setAcknowledged] = useState(false)
   return (
     <main>
       <Button variant="primary" onClick={() => setThemePreference(dark ? 'light' : 'dark')}>
@@ -64,6 +71,39 @@ export function Consumer() {
       <MarkdownText labels={markdownLabels} text={'Math: $x^2$'} />
       <Spinner size="md" tone="page" label="Loading" />
       <Switch defaultChecked aria-label="Enabled" />
+      <SegmentedControl<'vendor' | 'custom'>
+        id="fixture-mode"
+        value={mode}
+        label="Mode"
+        options={[
+          { value: 'vendor', label: 'Vendor' },
+          { value: 'custom', label: 'Custom' },
+        ]}
+        onChange={setMode}
+      />
+      <Checkbox checked={checked} onChange={setChecked} label="Image input" />
+      <Button variant="outline" onClick={() => setModalOpen(true)}>
+        Open modal
+      </Button>
+      <Modal open={modalOpen} title="Modal" closeLabel="Close" onClose={() => setModalOpen(false)}>
+        Modal body
+      </Modal>
+      <DangerButton size="sm" onClick={() => setRiskOpen(true)}>
+        Remove
+      </DangerButton>
+      <RiskConfirmation
+        open={riskOpen}
+        title="Remove workspace"
+        description="This cannot be undone."
+        acknowledgeLabel="I understand"
+        cancelLabel="Cancel"
+        closeLabel="Close"
+        confirmLabel="Remove"
+        acknowledged={acknowledged}
+        onAcknowledgedChange={setAcknowledged}
+        onCancel={() => setRiskOpen(false)}
+        onConfirm={() => setRiskOpen(false)}
+      />
       <Mark kind="official" label="Official" />
       <StatusBadge tone="success">Running</StatusBadge>
       <QrCode text="https://example.com/auth?state=next16" label="Scan to authorize" size={140} />
